@@ -1,0 +1,229 @@
+[gd_scene format=3 uid="uid://cpscom4ltkyn5"]
+
+[ext_resource type="Script" uid="uid://b132y1f4xe4ep" path="res://Scripts/Scenes/BattleScene.gd" id="1_ltshs"]
+[ext_resource type="Script" uid="uid://uilqo753i4wr" path="res://Scripts/BattleManagers/UIManager.gd" id="2_28s16"]
+[ext_resource type="Script" uid="uid://drd7twpy6vhb4" path="res://Scripts/EnemyAI.gd" id="2_gkmpl"]
+[ext_resource type="Script" uid="uid://drd4apjqq0ckj" path="res://Scripts/BattleManagers/AbilityManager.gd" id="3_3mvhd"]
+[ext_resource type="Script" uid="uid://cntgkha5wf75g" path="res://Scripts/BattleManagers/InputManager.gd" id="4_ftvu5"]
+
+[node name="BattleScene" type="Control" unique_id=1265532553]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("1_ltshs")
+
+[node name="BG" type="ColorRect" parent="." unique_id=1668866476]
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="Battlefield" type="HBoxContainer" parent="." unique_id=548894323]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -600.0
+offset_top = -150.0
+offset_right = 620.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PlayerSlot2" type="ColorRect" parent="Battlefield" unique_id=854335049]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.83884454, 0.88238746, 0.93520355, 1)
+
+[node name="PlayerSlot1" type="ColorRect" parent="Battlefield" unique_id=1279237472]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.83884454, 0.88238746, 0.93520355, 1)
+
+[node name="PlayerSlot0" type="ColorRect" parent="Battlefield" unique_id=538502986]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.83884454, 0.88238746, 0.93520355, 1)
+
+[node name="EnemySlot0" type="ColorRect" parent="Battlefield" unique_id=1353788792]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.98184377, 0.8224301, 0.8953134, 1)
+
+[node name="EnemySlot1" type="ColorRect" parent="Battlefield" unique_id=1489542972]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.98184377, 0.8224301, 0.8953134, 1)
+
+[node name="EnemySlot2" type="ColorRect" parent="Battlefield" unique_id=1821282470]
+layout_mode = 2
+size_flags_horizontal = 3
+color = Color(0.98184377, 0.8224301, 0.8953134, 1)
+
+[node name="PlayerHand" type="HBoxContainer" parent="." unique_id=257060371]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -450.0
+offset_top = -300.0
+offset_right = 450.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="EnemyHand" type="HBoxContainer" parent="." unique_id=1046541792]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -450.0
+offset_right = 450.0
+offset_bottom = 300.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="EnemyAvatar" type="ColorRect" parent="." unique_id=1201818136]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -175.0
+offset_bottom = 175.0
+grow_horizontal = 0
+grow_vertical = 2
+color = Color(1, 1, 0, 1)
+
+[node name="PlayerAvatar" type="ColorRect" parent="." unique_id=1303793898]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -175.0
+offset_right = 250.0
+offset_bottom = 175.0
+grow_vertical = 2
+color = Color(0.11372549, 1, 1, 1)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1625501952]
+script = ExtResource("2_28s16")
+
+[node name="EnemyDeckLabel" type="Label" parent="UI" unique_id=1138552895]
+offset_left = 1778.0
+offset_top = 752.0
+offset_right = 1870.0
+offset_bottom = 862.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerDeckLabel" type="Label" parent="UI" unique_id=176107061]
+offset_left = 84.0
+offset_top = 746.0
+offset_right = 176.0
+offset_bottom = 856.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EndTurnButton" type="Button" parent="UI" unique_id=159621378]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -164.0
+offset_top = -98.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/icon_disabled_color = Color(0.5803922, 0.5803922, 0.5803922, 0.6745098)
+theme_override_font_sizes/font_size = 32
+text = "End Turn"
+
+[node name="PlayerManaLabel" type="Label" parent="UI" unique_id=1105034712]
+offset_left = 87.0
+offset_top = 257.0
+offset_right = 247.0
+offset_bottom = 367.0
+theme_override_colors/font_color = Color(0.25882354, 0.23529412, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05490196, 0.62352943, 1, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "0/0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PlayerHPLabel" type="Label" parent="UI" unique_id=1671592918]
+offset_left = 155.0
+offset_top = 603.0
+offset_right = 247.0
+offset_bottom = 713.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0.96247107, 0.00082168815, 0.97279745, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnemyHPLabel" type="Label" parent="UI" unique_id=151190605]
+offset_left = 1673.0
+offset_top = 604.0
+offset_right = 1773.0
+offset_bottom = 714.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0.96247107, 0.00082168815, 0.97279745, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="EnemyManaLabel" type="Label" parent="UI" unique_id=1154154890]
+offset_left = 1668.0
+offset_top = 253.0
+offset_right = 1828.0
+offset_bottom = 363.0
+theme_override_colors/font_color = Color(0.25882354, 0.23529412, 1, 1)
+theme_override_colors/font_outline_color = Color(0.05490196, 0.62352943, 1, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "0/0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="AttackLine" type="Line2D" parent="UI" unique_id=331509183]
+
+[node name="EnemyAI" type="Node" parent="." unique_id=742652317]
+script = ExtResource("2_gkmpl")
+
+[node name="InputManager" type="Node" parent="." unique_id=1196008837]
+script = ExtResource("4_ftvu5")
+
+[node name="AbilityManager" type="Node" parent="." unique_id=692912661]
+script = ExtResource("3_3mvhd")
+
+[node name="InputBlocker" type="Control" parent="." unique_id=2107461306]
+visible = false
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[connection signal="pressed" from="UI/EndTurnButton" to="." method="_on_end_turn_button_pressed"]
