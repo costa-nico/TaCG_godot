@@ -4,7 +4,8 @@ const CARD_SCENE = preload("res://scenes/Card.tscn")
 
 @onready var ui_manager = $UI
 @onready var ability_manager = $AbilityManager
-@onready var enemy_ai = $EnemyAI
+@onready var enemy_ai = $EnemyAIManager
+@onready var dialogue_manager = $DialogueManager
 
 
 @onready var player_hand = $PlayerHand 
@@ -151,7 +152,7 @@ func cast_magic(card: Control, master: Master):
 		.set_ease(Tween.EASE_IN_OUT)
 	tween.tween_callback(func():
 		ability_manager.trigger_ability("onUse", card) # 사용 시 발동
-		card.z_index = 1
+		card.z_index = 0
 		card.top_level = false
 		card.queue_free()
 	)
@@ -198,7 +199,7 @@ func summon_to_slot(card, slot_node, master, index):
 	await card.set_on_board(index)
 
 	master.battlefield[index] = card # 배열에 기록
-	card.z_index = 1
+	card.z_index = 0
 	ability_manager.trigger_ability("onUse", card) # 소환 시 발동 능력 체크
 	print("hand to bf: %s의 슬롯%d에 %s 소환" % [master.name, index, card.card_data["name"]])
 
@@ -294,7 +295,7 @@ func attack_with_minion(attacker, target):
 
 	# 정리 (살아있을 때만)
 	if is_instance_valid(attacker):
-		attacker.z_index = 1
+		attacker.z_index = 0
 	if is_instance_valid(attacker) and attacker.card_data["hp"] <= 0:
 		print("%s의 %s 전사" % [attacker.master.name, attacker.card_data["name"]])
 		destroy_minion(attacker)

@@ -36,7 +36,7 @@ func start_drag(card):
 
 func end_drag(card):
 	dragging_card = null
-	card.z_index = 1
+	card.z_index = 0
 	match card.current_state:
 		card.State.DRAGGING_TO_USE:
 				check_drop(card)
@@ -87,6 +87,7 @@ func return_to_hand(card: Control, _reason: String):
 
 	print("return to hand: ", _reason)
 
+	card.top_level = false 
 	card.current_state = card.State.IN_HAND
 	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	card.animate_scale(card.SCALE_HAND)
@@ -105,8 +106,7 @@ func return_to_hand(card: Control, _reason: String):
 	# 3. 완료 후 정리 작업
 	tween.finished.connect(func():
 		var target_idx = card.placeholder.get_index()
-		card.top_level = false 
-		battle_scene.set_input_lock(false) # 입력 잠금 
+		battle_scene.set_input_lock(false) # 입력 잠금 해제
 		card.remove_placeholder()
 		if card.get_parent() != battle_scene.player_hand:
 			card.reparent(battle_scene.player_hand)

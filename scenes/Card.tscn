@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://d2njvvhegumam"]
 
-[ext_resource type="Script" uid="uid://npbu2uday7qd" path="res://Scripts/Scenes/Card.gd" id="1_yiag5"]
+[ext_resource type="Script" uid="uid://npbu2uday7qd" path="res://Scripts/Scenes/Card.gd" id="1_pnb5n"]
 
 [sub_resource type="FontFile" id="FontFile_yiag5"]
 subpixel_positioning = 0
@@ -171,7 +171,7 @@ grow_horizontal = 2
 grow_vertical = 2
 pivot_offset = Vector2(100, 150)
 theme = SubResource("Theme_tgmmg")
-script = ExtResource("1_yiag5")
+script = ExtResource("1_pnb5n")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=574405956]
 

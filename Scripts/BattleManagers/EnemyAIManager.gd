@@ -4,6 +4,12 @@ extends Node
 
 func start_enemy_turn():
 	print("Enemy AI: 턴 시작")
+	
+	battle_scene.dialogue_manager.start_dialogue([
+		{"image": "res://Images/enemy.jpg", "text": "내 차례다!"}
+	])
+	await battle_scene.dialogue_manager.dialogue_finished
+
 	await get_tree().create_timer(1.0).timeout # 턴 시작 딜레이
 	var safety_counter = 0
 	while safety_counter < 20:

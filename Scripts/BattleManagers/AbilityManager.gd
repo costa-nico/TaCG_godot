@@ -42,12 +42,15 @@ func _apply_effect_by_id(effect_id: String, target, amount):
 		"ADD_MANA":
 			target.mana += amount
 			battle_scene.ui_manager.update()
+
+
 		"DOUBLE_HP":
 			target.card_data["hp"] *= 2
 			target.update_display()
 		"DRAW_CARD":
 			battle_scene.draw_cards(target, amount)
-			pass
+			# 대사 예시: 카드 드로우 시 대사 표시
+			
 	
 # 타겟팅 로직 분리
 func _get_targets(target_type: String, source: Control) -> Array:
