@@ -6,8 +6,8 @@ var card_list = {
 	"DUMMY": {
 		"type": "minion",
 		"name": "더미",
-		"cost": 1,
-		"atk": 1,
+		"cost": 0,
+		"atk": 0,
 		"hp": 1,
 		# "texture_path": "res://assets/cards/scarecrow.png",
 		"abilities": {}

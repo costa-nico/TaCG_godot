@@ -2,10 +2,7 @@
 
 [ext_resource type="Script" uid="uid://npbu2uday7qd" path="res://Scripts/Scenes/Card.gd" id="1_pnb5n"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_pnb5n"]
-size = Vector2(200, 300)
-
-[node name="Card" type="Area2D" unique_id=1663776642]
+[node name="Card" type="Node2D" unique_id=4605140]
 script = ExtResource("1_pnb5n")
 
 [node name="Background" type="Sprite2D" parent="." unique_id=574405956]
@@ -60,38 +57,27 @@ color = Color(0.713733, 0.8355702, 0.9758008, 1)
 
 [node name="Labels" type="Control" parent="." unique_id=66215875]
 layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -150.0
-offset_right = 100.0
-offset_bottom = 150.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
 
 [node name="NameLabel" type="Label" parent="Labels" unique_id=882698166]
-layout_mode = 1
-offset_left = 10.0
-offset_right = 80.0
-offset_bottom = 50.0
+layout_mode = 0
+offset_left = -100.0
+offset_top = -150.0
+offset_right = -30.0
+offset_bottom = -100.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 35
 text = "이름"
 
 [node name="CostLabel" type="Label" parent="Labels" unique_id=260785303]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -28.0
-offset_right = -8.0
-offset_bottom = 49.0
-grow_horizontal = 0
+layout_mode = 0
+offset_left = 70.0
+offset_top = -150.0
+offset_right = 90.0
+offset_bottom = -101.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 1, 1)
 theme_override_constants/outline_size = 10
@@ -100,31 +86,22 @@ text = "0"
 horizontal_alignment = 2
 
 [node name="AtkLabel" type="Label" parent="Labels" unique_id=514281225]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -49.0
-offset_right = 30.0
-grow_vertical = 0
+layout_mode = 0
+offset_left = -90.0
+offset_top = 102.0
+offset_right = -70.0
+offset_bottom = 151.0
 theme_override_colors/font_outline_color = Color(0, 0.6666667, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 35
 text = "1"
 
 [node name="HpLabel" type="Label" parent="Labels" unique_id=242511331]
-layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -28.0
-offset_top = -49.0
-offset_right = -8.0
-grow_horizontal = 0
-grow_vertical = 0
+layout_mode = 0
+offset_left = 70.0
+offset_top = 102.0
+offset_right = 90.0
+offset_bottom = 151.0
 theme_override_colors/font_outline_color = Color(1, 0, 0, 1)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 35
@@ -133,20 +110,7 @@ horizontal_alignment = 2
 
 [node name="FG" type="ColorRect" parent="." unique_id=212657204]
 visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -150.0
-offset_right = 100.0
-offset_bottom = 150.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 200.0
+offset_bottom = 300.0
 mouse_filter = 2
 color = Color(0.5372549, 0.43529412, 0.36078432, 0.78431374)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1565543763]
-shape = SubResource("RectangleShape2D_pnb5n")
-debug_color = Color(0.81465137, 0.0019754786, 0.9761837, 0.1882353)

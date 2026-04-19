@@ -1,1 +1,7 @@
+CollisionShape2D
+CollisionPolygon2D
+Area2D
+Node2D
+Node
 Sprite2D
+Control

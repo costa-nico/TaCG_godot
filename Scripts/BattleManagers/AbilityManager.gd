@@ -1,10 +1,10 @@
 extends Node
 
 # 배틀씬 참조
-@onready var battle_scene = get_parent()
+@onready var battle_scene = get_tree().current_scene
 
 # 어빌리티 실행 메인 함수
-func trigger_ability(trigger_type: String, source_card: Control):
+func trigger_ability(trigger_type: String, source_card: Node2D):
 	var abilities = source_card.card_data.get("abilities", {})
 	if not abilities.has(trigger_type):
 		return
@@ -17,7 +17,7 @@ func trigger_ability(trigger_type: String, source_card: Control):
 		_execute_effect(ability_data, source_card)
 
 # 실제 효과를 물리적으로 적용
-func _execute_effect(effect: Dictionary, source: Control):
+func _execute_effect(effect: Dictionary, source: Node2D):
 	var effect_id = effect["ID"]
 	var target_type = effect["target"]
 	var amount = effect.get("amount", 0)
@@ -33,7 +33,7 @@ func _execute_effect(effect: Dictionary, source: Control):
 func _apply_effect_by_id(effect_id: String, target, amount):
 	match effect_id:
 		"ADD_HP":
-			if target is Control: # 카드인 경우
+			if target is Node2D: # 카드인 경우
 				target.card_data["hp"] += amount
 				target.update_display()
 			else: # 마스터인 경우
@@ -53,7 +53,7 @@ func _apply_effect_by_id(effect_id: String, target, amount):
 			
 	
 # 타겟팅 로직 분리
-func _get_targets(target_type: String, source: Control) -> Array:
+func _get_targets(target_type: String, source: Node2D) -> Array:
 	var result = []
 	match target_type:
 		"self":
@@ -66,7 +66,7 @@ func _get_targets(target_type: String, source: Control) -> Array:
 
 # 능력 발동 시 시각적 피드백!!!!!
 func _apply_popping(target):
-	if target is Control: # 카드면 살짝 키웠다 줄여!!!!!
+	if target is Node2D: # 카드면 살짝 키웠다 줄여!!!!!
 		var tween = create_tween()
 		tween.tween_property(target, "scale", target.scale * 1.2, 0.1)
 		tween.chain().tween_property(target, "scale", target.scale	, 0.1)

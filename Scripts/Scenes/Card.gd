@@ -1,15 +1,17 @@
-extends Control
+extends Area2D
 
 # 연출용 스케일 값 정의 (상수로 관리해!!!!!)
 const SCALE_HAND = Vector2(1, 1)   # 손패에서는 작게!!!!!
 const SCALE_DRAG = Vector2(1.1, 1.1)   # 드래그 중엔 크게!!!!! (1.2는 너무 커!!!!!)
 const SCALE_BOARD = Vector2(0.8, 0.8)  # 전장에선 원래대로!!!!!
 
+const CARD_SIZE = Vector2(200, 300)
+
 enum State { IN_HAND, DRAGGING_TO_USE, ON_BOARD, DRAGGING_TO_ATTACK, SNAPPED}
 var current_state: State = State.IN_HAND
 
 @onready var battle_scene = get_tree().current_scene
-@onready var input_manager = battle_scene.get_node("InputManager")
+@onready var input_manager = battle_scene.input_manager
 
 # 노드 참조
 @onready var labels = {
@@ -21,20 +23,19 @@ var current_state: State = State.IN_HAND
 
 @onready var illustration = $Illustration
 @onready var outline = $AttackableShadow
-
 @onready var foreground = $FG
 
 var card_data: Dictionary
 var master: Object
 var attackable: int = 0
-
-var battlefield_position = -1 # 전장 위치 (0,1,2) -1은 아직 전장에 안 나왔다는 뜻
-
-var placeholder: Control = null
+var slot_position = -1 # 전장 위치 (0,1,2) -1은 아직 전장에 안 나왔다는 뜻
+var placeholder: Node2D = null
 
 func _ready():
 	scale = SCALE_HAND
-	pivot_offset = size / 2
+	
+	input_pickable = true
+	input_event.connect(_on_area_2d_input_event)
 
 func init_card(data: Dictionary, master_: Object):
 	card_data = data.duplicate(true)
@@ -54,30 +55,28 @@ func init_card(data: Dictionary, master_: Object):
 	if self.master == battle_scene.enemy:
 		foreground.visible = true
 
+func _on_area_2d_input_event(_viewport, event, _shape_idx):
+	if battle_scene.current_master != battle_scene.player:
+		return
+	if master != battle_scene.player:
+		return
+		
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			print("카드 입력 감지: ", card_data["name"], " 현재 상태: ", current_state)
+			if event.pressed:
+				get_viewport().set_input_as_handled() # 카드 중복 클릭 방지 (맨 위 카드만 잡히게 함)
+				input_manager.start_drag(self)
+
 func update_display():
 	if card_data["type"] == "minion":
 		labels.atk.text = str(card_data["atk"])
 		labels.hp.text = str(card_data["hp"])
 		outline.visible = attackable > 0
 
-func _gui_input(event):
-	if battle_scene.current_master != battle_scene.player:
-		return
-	if master != battle_scene.player:
-		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			input_manager.start_drag(self)
-		else:
-			input_manager.end_drag(self)
-
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT:
-		input_manager.handle_right_click(self)
-
 func set_on_board(index: int):
-	battlefield_position = index
+	slot_position = index
 	current_state = State.ON_BOARD
-	top_level = false 
 	
 	var tween = create_tween()
 	tween.chain()\
@@ -94,8 +93,8 @@ func animate_scale(target_scale: Vector2):
 	await tween.finished
 
 func create_placeholder():
-	placeholder = Control.new()
-	placeholder.custom_minimum_size = size
+	placeholder = Node2D.new()
+	placeholder.global_position = global_position
 	get_parent().add_child(placeholder)
 	get_parent().move_child(placeholder, get_index())
 
@@ -103,3 +102,8 @@ func remove_placeholder():
 	if is_instance_valid(placeholder):
 		placeholder.queue_free()
 		placeholder = null
+
+func safety_top_level(target: bool):
+	var current_pos = global_position
+	top_level = target 
+	global_position = current_pos

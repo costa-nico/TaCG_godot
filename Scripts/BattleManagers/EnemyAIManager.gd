@@ -1,6 +1,6 @@
 extends Node
 
-@onready var battle_scene = get_parent()
+@onready var battle_scene = get_tree().current_scene
 
 func start_enemy_turn():
 	print("Enemy AI: 턴 시작")
@@ -33,7 +33,7 @@ func start_enemy_turn():
 # --- 내부 헬퍼 함수들 (Atomic Actions) ---
 
 func _try_use_card() -> bool:
-	var hand = battle_scene.enemy_hand.get_children()
+	var hand = battle_scene.enemy.hand # 노드의 자식이 아닌, 데이터 배열(hand)을 직접 참조합니다.
 	var usable = hand.filter(func(c): 
 		return is_instance_valid(c) and c.card_data["cost"] <= battle_scene.enemy.mana
 	)
@@ -46,10 +46,9 @@ func _try_use_card() -> bool:
 	var card_to_use = usable[-1]
 	if card_to_use.card_data["type"] == "minion":
 		for i in range(3):
-			if battle_scene.enemy.battlefield[i] == null:
-				var slot_node = battle_scene.enemy_battlefield_nodes[i]
+			if battle_scene.enemy.slot[i] == null:
 				battle_scene.enemy.use_mana(card_to_use.card_data["cost"]) # 마나 차감
-				await battle_scene.summon_to_slot(card_to_use, slot_node, battle_scene.enemy, i)
+				await battle_scene.summon_to_slot(card_to_use, i, battle_scene.enemy)
 				return true
 	elif card_to_use.card_data["type"] == "magic":
 		battle_scene.enemy.use_mana(card_to_use.card_data["cost"]) # 마나 차감
@@ -61,7 +60,7 @@ func _try_use_card() -> bool:
 
 func _try_attack_one_time() -> bool:
 	# 1. 공격 가능한 적 미니언들 필터링
-	var attackers = battle_scene.enemy.battlefield.filter(func(c): 
+	var attackers = battle_scene.enemy.slot.filter(func(c): 
 		return is_instance_valid(c) and c.attackable > 0
 	)
 	if attackers.is_empty(): return false # 공격할 놈 없으면 종료
@@ -75,7 +74,7 @@ func _try_attack_one_time() -> bool:
 
 func _choose_attack_target(_attacker):
 	# 1. 후보군 생성 (미니언 + 마스터)
-	var targets = battle_scene.player.battlefield.filter(func(c): return is_instance_valid(c))
+	var targets = battle_scene.player.slot.filter(func(c): return is_instance_valid(c))
 	targets.append(battle_scene.player)
 
 	# 2. 도발 판정 필터링 

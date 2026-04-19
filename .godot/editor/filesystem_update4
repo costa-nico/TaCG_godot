@@ -1,12 +1,7 @@
-res://scenes/CardDescription.tscn
-res://scenes/Card.tscn
-res://scenes/BattleScene.tscn
-res://Scripts/Scenes/BattleScene.gd
-res://Scripts/BattleManagers/EnemyAIManager.gd
 res://Scenes/BattleScene.tscn
-res://Scenes/DialogueScene.tscn
-res://Scripts/DialogueManager.gd
-res://Scripts/BattleManagers/InputManager.gd
-res://Scripts/BattleManagers/AbilityManager.gd
+res://Scripts/Scenes/BattleScene.gd
 res://Scenes/Card.tscn
-res://Scenes/CardDescription.tscn
+res://Scripts/Scenes/Card.gd
+res://Scripts/BattleManagers/InputManager.gd
+res://Scripts/BattleManagers/EnemyAIManager.gd
+res://Scripts/BattleManagers/AbilityManager.gd

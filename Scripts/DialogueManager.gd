@@ -6,7 +6,6 @@ var current_index: int = 0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var text_label: Label = $Panel/TextLabel
-@onready var next_button: Button = $Panel/NextButton
 
 signal dialogue_finished
 
