@@ -1,7 +1,7 @@
-res://Scenes/BattleScene.tscn
-res://Scripts/Scenes/BattleScene.gd
 res://Scenes/Card.tscn
-res://Scripts/Scenes/Card.gd
+res://Scripts/Scenes/BattleScene.gd
 res://Scripts/BattleManagers/InputManager.gd
 res://Scripts/BattleManagers/EnemyAIManager.gd
-res://Scripts/BattleManagers/AbilityManager.gd
+res://Scripts/Scenes/Card.gd
+res://Scenes/BattleScene.tscn
+res://Scripts/CardDatabase.gd

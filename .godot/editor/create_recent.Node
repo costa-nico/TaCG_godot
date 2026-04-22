@@ -1,7 +1,10 @@
+Panel
 CollisionShape2D
-CollisionPolygon2D
 Area2D
+TextureRect
 Node2D
-Node
+DirectionalLight2D
 Sprite2D
+CollisionPolygon2D
+Node
 Control

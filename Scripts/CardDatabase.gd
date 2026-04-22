@@ -14,9 +14,9 @@ var card_list = {
 	},
 	"DRAWCARD": {
 		"type": "magic",
-		"name": "압축",
+		"name": "카드 부스트",
 		"cost": 2,
-		# "texture_path": "res://assets/cards/draw_card.png",
+		"texture_path": "res://Images/cards/yokhang.png",
 		"abilities": {
 			"onUse": [
 				{ "ID": "DRAW_CARD", "target": "my_master", "amount": 2 },
@@ -27,7 +27,7 @@ var card_list = {
 		"type": "magic",
 		"name": "동전",
 		"cost": 0,
-		# "texture_path": "res://assets/cards/coin.png",
+		"texture_path": "res://Images/cards/coin.png",
 		"abilities": {
 			"onUse": [
 				{ "ID": "ADD_MANA", "target": "my_master", "amount": 1 },
@@ -40,7 +40,7 @@ var card_list = {
 		"cost": 1,
 		"atk": 1,
 		"hp": 1,
-		# "texture_path": "res://assets/cards/boar.png",
+		# "texture_path": "res://Images/cards/boar.png",
 		"abilities": {
 			"keyword": { "ID": "TAUNT" }
 		}
@@ -51,20 +51,9 @@ var card_list = {
 		"cost": 2,
 		"atk": 1,
 		"hp": 2,
-		# "texture_path": "res://assets/cards/farmer.png",
+		"texture_path": "res://Images/cards/farmer.png",
 		"abilities": {
 			"onTurnStart": { "ID": "ADD_MANA", "target": "my_master", "amount": 1 }
-		}
-	},
-	"MOLD": {
-		"type": "minion",
-		"name": "곰팡이",
-		"cost": 2,
-		"atk": 2,
-		"hp": 2,
-		# "texture_path": "res://assets/cards/mold.png",
-		"abilities": {
-			"onUse": { "ID": "DOUBLE_HP", "target": "self", "amount": null }
 		}
 	}
 }

@@ -42,8 +42,6 @@ func _apply_effect_by_id(effect_id: String, target, amount):
 		"ADD_MANA":
 			target.mana += amount
 			battle_scene.ui_manager.update()
-
-
 		"DOUBLE_HP":
 			target.card_data["hp"] *= 2
 			target.update_display()

@@ -1,6 +1,18 @@
 [gd_scene format=3 uid="uid://d2njvvhegumam"]
 
 [ext_resource type="Script" uid="uid://npbu2uday7qd" path="res://Scripts/Scenes/Card.gd" id="1_pnb5n"]
+[ext_resource type="Texture2D" uid="uid://d06jnl76ym6ms" path="res://Images/card_cover.png" id="2_3p273"]
+[ext_resource type="Texture2D" uid="uid://ble75fb1hc5xs" path="res://Images/card_bg.png" id="2_h8wm0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8wm0"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_h8wm0"]
+size = Vector2(150, 180)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pnb5n"]
 size = Vector2(200, 300)
@@ -8,55 +20,33 @@ size = Vector2(200, 300)
 [node name="Card" type="Area2D" unique_id=1663776642]
 script = ExtResource("1_pnb5n")
 
+[node name="Aura" type="Panel" parent="." unique_id=1581892190]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -110.0
+offset_top = -160.0
+offset_right = 110.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_h8wm0")
+
 [node name="Background" type="Sprite2D" parent="." unique_id=574405956]
+texture = ExtResource("2_h8wm0")
 
-[node name="Illustration" type="Sprite2D" parent="." unique_id=1890261722]
+[node name="Illust" type="Area2D" parent="." unique_id=928449883]
+position = Vector2(0, -5)
 
-[node name="AttackableShadow" type="ColorRect" parent="." unique_id=1631438640]
-visible = false
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -105.0
-offset_top = -155.0
-offset_right = 105.0
-offset_bottom = 155.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.3764706, 1, 0.56078434, 0.5764706)
+[node name="Texture" type="Sprite2D" parent="Illust" unique_id=1890261722]
+position = Vector2(0, -1)
 
-[node name="BG" type="ColorRect" parent="." unique_id=346336474]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -150.0
-offset_right = 100.0
-offset_bottom = 150.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.5381267, 0.43553045, 0.36070815, 1)
-
-[node name="ILL" type="ColorRect" parent="." unique_id=942694447]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -90.0
-offset_top = -102.0
-offset_right = 90.0
-offset_bottom = 102.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0.713733, 0.8355702, 0.9758008, 1)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Illust" unique_id=1978895571]
+shape = SubResource("RectangleShape2D_h8wm0")
+disabled = true
 
 [node name="Labels" type="Control" parent="." unique_id=66215875]
 layout_mode = 3
@@ -65,35 +55,36 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = -150.0
-offset_right = 100.0
-offset_bottom = 150.0
+offset_left = -92.0
+offset_top = -143.0
+offset_right = 92.0
+offset_bottom = 143.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
 [node name="NameLabel" type="Label" parent="Labels" unique_id=882698166]
 layout_mode = 1
-offset_left = 10.0
-offset_right = 80.0
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -35.0
+offset_right = 35.0
 offset_bottom = 50.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 27
 text = "이름"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="CostLabel" type="Label" parent="Labels" unique_id=260785303]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -28.0
-offset_right = -8.0
+offset_right = 20.0
 offset_bottom = 49.0
-grow_horizontal = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 1, 1)
+theme_override_colors/font_color = Color(0.29333335, 0.5063266, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 35
 text = "0"
@@ -104,11 +95,11 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 10.0
 offset_top = -49.0
-offset_right = 30.0
+offset_right = 20.0
 grow_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0.6666667, 0, 1)
+theme_override_colors/font_color = Color(0.9999996, 0.86684203, 0.12807226, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 35
 text = "1"
@@ -120,18 +111,18 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -28.0
+offset_left = -20.0
 offset_top = -49.0
-offset_right = -8.0
 grow_horizontal = 0
 grow_vertical = 0
-theme_override_colors/font_outline_color = Color(1, 0, 0, 1)
+theme_override_colors/font_color = Color(0.99694544, 6.2329323e-06, 1.540184e-06, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
 theme_override_font_sizes/font_size = 35
 text = "5"
 horizontal_alignment = 2
 
-[node name="FG" type="ColorRect" parent="." unique_id=212657204]
+[node name="Cover" type="TextureRect" parent="." unique_id=227794221]
 visible = false
 anchors_preset = 8
 anchor_left = 0.5
@@ -145,8 +136,9 @@ offset_bottom = 150.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-color = Color(0.5372549, 0.43529412, 0.36078432, 0.78431374)
+texture = ExtResource("2_3p273")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1565543763]
+visible = false
 shape = SubResource("RectangleShape2D_pnb5n")
 debug_color = Color(0.81465137, 0.0019754786, 0.9761837, 0.1882353)

@@ -2,9 +2,8 @@ extends Node
 
 # 플레이어 덱 정보: 카드ID(또는 이름): 장 수
 var player_deck: Dictionary = {
-	"DRAWCARD": 0,
-	"BOAR": 1,
-	"FARMER": 1,
+	"DRAWCARD": 5,
+	"FARMER": 5,
 	"COIN": 5,
 }
 

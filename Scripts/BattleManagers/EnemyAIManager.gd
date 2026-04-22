@@ -45,7 +45,7 @@ func _try_use_card() -> bool:
 	)
 	var card_to_use = usable[-1]
 	if card_to_use.card_data["type"] == "minion":
-		for i in range(3):
+		for i in range(battle_scene.enemy.slot.size()): # 하드코딩(3) 제거, 슬롯 개수 확장에 자동 대응
 			if battle_scene.enemy.slot[i] == null:
 				battle_scene.enemy.use_mana(card_to_use.card_data["cost"]) # 마나 차감
 				await battle_scene.summon_to_slot(card_to_use, i, battle_scene.enemy)
@@ -74,10 +74,11 @@ func _try_attack_one_time() -> bool:
 
 func _choose_attack_target(_attacker):
 	# 1. 후보군 생성 (미니언 + 마스터)
-	var targets = battle_scene.player.slot.filter(func(c): return is_instance_valid(c))
+	var targets: Array = [] # Area2D와 Master를 모두 담을 수 있도록 타입이 없는 범용 배열로 선언
+	targets.append_array(battle_scene.player.slot.filter(func(c): return is_instance_valid(c)))
 	targets.append(battle_scene.player)
 
-	# 2. 도발 판정 필터링 
+	# 2. 타겟 우선순위(앞열 우선) 판정 필터링 
 	var valid_targets = targets.filter(func(t): 
 		return battle_scene._is_targetable(_attacker, t)
 	)

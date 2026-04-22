@@ -1,14 +1,20 @@
 [gd_scene format=3 uid="uid://cpscom4ltkyn5"]
 
 [ext_resource type="Script" uid="uid://b132y1f4xe4ep" path="res://Scripts/Scenes/BattleScene.gd" id="1_ltshs"]
-[ext_resource type="Texture2D" uid="uid://blj51d3eqs6s2" path="res://Images/battlefield.png" id="2_8uoga"]
+[ext_resource type="Texture2D" uid="uid://caevlp61v84yc" path="res://Images/background.png" id="2_8uoga"]
 [ext_resource type="Script" uid="uid://uilqo753i4wr" path="res://Scripts/BattleManagers/UIManager.gd" id="2_28s16"]
 [ext_resource type="Script" uid="uid://drd7twpy6vhb4" path="res://Scripts/BattleManagers/EnemyAIManager.gd" id="2_gkmpl"]
 [ext_resource type="Script" uid="uid://drd4apjqq0ckj" path="res://Scripts/BattleManagers/AbilityManager.gd" id="3_3mvhd"]
 [ext_resource type="Script" uid="uid://cntgkha5wf75g" path="res://Scripts/BattleManagers/InputManager.gd" id="4_ftvu5"]
 [ext_resource type="PackedScene" uid="uid://nbvvkti3gbm5" path="res://Scenes/DialogueScene.tscn" id="5_dialogue"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2tp6q"]
+size = Vector2(230, 230)
+
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_8uoga"]
+size = Vector2(230, 330)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kwfy1"]
 size = Vector2(200, 300)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_47u5s"]
@@ -21,76 +27,104 @@ script = ExtResource("1_ltshs")
 position = Vector2(960, 540)
 texture = ExtResource("2_8uoga")
 
+[node name="EnemyAvatar" type="Area2D" parent="." unique_id=123072701]
+position = Vector2(1708, 156)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyAvatar" unique_id=2123586831]
+shape = SubResource("RectangleShape2D_2tp6q")
+debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
+
+[node name="PlayerAvatar" type="Sprite2D" parent="EnemyAvatar" unique_id=126097242]
+
+[node name="PlayerAvatar" type="Area2D" parent="." unique_id=30001336]
+position = Vector2(199, 907)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerAvatar" unique_id=2099592078]
+shape = SubResource("RectangleShape2D_2tp6q")
+debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
+
+[node name="PlayerAvatar" type="Sprite2D" parent="PlayerAvatar" unique_id=69917054]
+
 [node name="Cards" type="Node2D" parent="." unique_id=281149523]
-
-[node name="PlayerAvatar" type="Node2D" parent="." unique_id=1173050423]
-
-[node name="EnemyAvatar" type="Node2D" parent="." unique_id=858017482]
 
 [node name="Slots" type="Node2D" parent="." unique_id=1821842232]
 
 [node name="P3" type="Area2D" parent="Slots" unique_id=1071557248]
-position = Vector2(329, 519)
+position = Vector2(202, 541)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/P3" unique_id=574029390]
 shape = SubResource("RectangleShape2D_8uoga")
 
 [node name="P2" type="Area2D" parent="Slots" unique_id=799463715]
-position = Vector2(677, 517)
+position = Vector2(472, 541)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/P2" unique_id=146616510]
 shape = SubResource("RectangleShape2D_8uoga")
 
 [node name="P1" type="Area2D" parent="Slots" unique_id=1513989866]
-position = Vector2(979, 509)
+position = Vector2(741, 541)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/P1" unique_id=225794204]
 shape = SubResource("RectangleShape2D_8uoga")
 
 [node name="E1" type="Area2D" parent="Slots" unique_id=1750308337]
-position = Vector2(1247, 514)
+position = Vector2(1163, 540)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/E1" unique_id=857406034]
 shape = SubResource("RectangleShape2D_8uoga")
 
 [node name="E2" type="Area2D" parent="Slots" unique_id=1047818001]
-position = Vector2(1492, 504)
+position = Vector2(1433, 541)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/E2" unique_id=1540514165]
 shape = SubResource("RectangleShape2D_8uoga")
 
 [node name="E3" type="Area2D" parent="Slots" unique_id=1628062448]
-position = Vector2(1746, 514)
+position = Vector2(1703, 540)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/E3" unique_id=1769097457]
 shape = SubResource("RectangleShape2D_8uoga")
+
+[node name="EnemyDeck" type="Node2D" parent="." unique_id=1105448632]
+position = Vector2(200, 150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyDeck" unique_id=466808913]
+shape = SubResource("RectangleShape2D_kwfy1")
+debug_color = Color(0.8303168, 0.0014510459, 0.945857, 0.41960785)
+
+[node name="PlayerDeck" type="Node2D" parent="." unique_id=732787777]
+position = Vector2(1720, 930)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDeck" unique_id=1078085657]
+shape = SubResource("RectangleShape2D_kwfy1")
+debug_color = Color(0.8303168, 0.0014510459, 0.945857, 0.41960785)
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=1625501952]
 script = ExtResource("2_28s16")
 
 [node name="EnemyDeckLabel" type="Label" parent="UI" unique_id=1138552895]
-offset_left = 1778.0
-offset_top = 752.0
-offset_right = 1870.0
-offset_bottom = 862.0
+offset_left = 130.0
+offset_top = 37.0
+offset_right = 199.0
+offset_bottom = 120.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 15
-theme_override_font_sizes/font_size = 80
+theme_override_font_sizes/font_size = 60
 text = "00"
 horizontal_alignment = 1
 vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
 [node name="PlayerDeckLabel" type="Label" parent="UI" unique_id=176107061]
-offset_left = 84.0
-offset_top = 746.0
-offset_right = 176.0
-offset_bottom = 856.0
+offset_left = 1641.0
+offset_top = 807.0
+offset_right = 1710.0
+offset_bottom = 890.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 15
-theme_override_font_sizes/font_size = 80
+theme_override_font_sizes/font_size = 60
 text = "00"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -108,16 +142,16 @@ grow_horizontal = 0
 grow_vertical = 0
 theme_override_colors/icon_disabled_color = Color(0.5803922, 0.5803922, 0.5803922, 0.6745098)
 theme_override_font_sizes/font_size = 32
-text = "End Turn"
+text = "턴 종료"
 metadata/_edit_use_anchors_ = true
 
 [node name="PlayerManaLabel" type="Label" parent="UI" unique_id=1105034712]
-offset_left = 87.0
-offset_top = 257.0
-offset_right = 247.0
-offset_bottom = 367.0
+offset_left = 337.0
+offset_top = 907.0
+offset_right = 497.0
+offset_bottom = 1017.0
 theme_override_colors/font_color = Color(0.25882354, 0.23529412, 1, 1)
-theme_override_colors/font_outline_color = Color(0.05490196, 0.62352943, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 15
 theme_override_font_sizes/font_size = 80
 text = "0/0"
@@ -126,12 +160,12 @@ vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
 [node name="PlayerHPLabel" type="Label" parent="UI" unique_id=1671592918]
-offset_left = 155.0
-offset_top = 603.0
-offset_right = 247.0
-offset_bottom = 713.0
-theme_override_colors/font_color = Color(1, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(0.96247107, 0.00082168815, 0.97279745, 1)
+offset_left = 369.0
+offset_top = 807.0
+offset_right = 461.0
+offset_bottom = 917.0
+theme_override_colors/font_color = Color(1, 0.19607843, 0.19607843, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 15
 theme_override_font_sizes/font_size = 80
 text = "00"
@@ -140,12 +174,12 @@ vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
 [node name="EnemyHPLabel" type="Label" parent="UI" unique_id=151190605]
-offset_left = 1673.0
-offset_top = 604.0
-offset_right = 1773.0
-offset_bottom = 714.0
-theme_override_colors/font_color = Color(1, 0, 0, 1)
-theme_override_colors/font_outline_color = Color(0.96247107, 0.00082168815, 0.97279745, 1)
+offset_left = 1460.0
+offset_top = 37.0
+offset_right = 1560.0
+offset_bottom = 147.0
+theme_override_colors/font_color = Color(1, 0.19607843, 0.19607843, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 15
 theme_override_font_sizes/font_size = 80
 text = "00"
@@ -154,12 +188,12 @@ vertical_alignment = 1
 metadata/_edit_use_anchors_ = true
 
 [node name="EnemyManaLabel" type="Label" parent="UI" unique_id=1154154890]
-offset_left = 1668.0
-offset_top = 253.0
-offset_right = 1828.0
-offset_bottom = 363.0
+offset_left = 1433.0
+offset_top = 147.0
+offset_right = 1593.0
+offset_bottom = 257.0
 theme_override_colors/font_color = Color(0.25882354, 0.23529412, 1, 1)
-theme_override_colors/font_outline_color = Color(0.05490196, 0.62352943, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 15
 theme_override_font_sizes/font_size = 80
 text = "0/0"
@@ -169,6 +203,11 @@ metadata/_edit_use_anchors_ = true
 
 [node name="AttackLine" type="Line2D" parent="UI" unique_id=331509183]
 
+[node name="DialogueManager" parent="UI" unique_id=1234567890 instance=ExtResource("5_dialogue")]
+visible = false
+offset_right = 1920.0
+offset_bottom = 1080.0
+
 [node name="InputBlocker" type="Control" parent="." unique_id=2107461306]
 visible = false
 layout_mode = 3
@@ -177,19 +216,26 @@ offset_right = 1920.0
 offset_bottom = 1080.0
 
 [node name="MagicSlot" type="Area2D" parent="." unique_id=730773853]
-position = Vector2(1118, 498)
+visible = false
+position = Vector2(956, 539)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MagicSlot" unique_id=1735406566]
-position = Vector2(-90, 17)
 shape = SubResource("RectangleShape2D_47u5s")
 debug_color = Color(0.6096093, 0.36287096, 1, 0.41960785)
 
-[node name="Managers" type="Node" parent="." unique_id=1735004178]
+[node name="PlayerHand" type="Node2D" parent="." unique_id=1675373293]
+position = Vector2(960, 930)
 
-[node name="DialogueManager" parent="Managers" unique_id=1234567890 instance=ExtResource("5_dialogue")]
-visible = false
-offset_right = 1920.0
-offset_bottom = 1080.0
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerHand" unique_id=2035503877]
+shape = SubResource("RectangleShape2D_kwfy1")
+
+[node name="EnemyHand" type="Node2D" parent="." unique_id=378919369]
+position = Vector2(960, 150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHand" unique_id=573548534]
+shape = SubResource("RectangleShape2D_kwfy1")
+
+[node name="Managers" type="Node" parent="." unique_id=1735004178]
 
 [node name="EnemyAIManager" type="Node" parent="Managers" unique_id=742652317]
 script = ExtResource("2_gkmpl")
@@ -199,11 +245,5 @@ script = ExtResource("4_ftvu5")
 
 [node name="AbilityManager" type="Node" parent="Managers" unique_id=692912661]
 script = ExtResource("3_3mvhd")
-
-[node name="PlayerHand" type="Node2D" parent="." unique_id=1675373293]
-position = Vector2(1020, 907)
-
-[node name="EnemyHand" type="Node2D" parent="." unique_id=378919369]
-position = Vector2(950, 153)
 
 [connection signal="pressed" from="UI/EndTurnButton" to="." method="_on_end_turn_button_pressed"]
