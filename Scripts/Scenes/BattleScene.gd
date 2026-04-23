@@ -9,6 +9,7 @@ const CARD_SCENE = preload("res://scenes/Card.tscn")
 @onready var input_manager = $Managers/InputManager
 
 @onready var dialogue_manager = $UI/DialogueManager
+@onready var description_manager = $UI/DescriptionManager # !!! 실제로 만드신 디스크립션 씬 노드 경로로 맞춰주세요 !!!
 
 @onready var attack_line = $UI/AttackLine
 @onready var input_blocker = $InputBlocker
@@ -128,7 +129,7 @@ func _create_deck_visuals():
 	var p_deck = CARD_SCENE.instantiate()
 	card_container.add_child(p_deck)
 	p_deck.init_card(dummy_data, player)
-	p_deck.scale = Vector2(1, 1) # 덱은 약간 작게 보이도록 스케일 조정
+	p_deck.scale = p_deck.SCALE_HAND # 덱 크기를 핸드 스케일과 동일하게 맞춤
 	p_deck.cover.visible = true # 커버 활성화
 	p_deck.input_pickable = false    # 클릭 방지
 	p_deck.global_position = player_deck_node.global_position
@@ -138,7 +139,7 @@ func _create_deck_visuals():
 	var e_deck = CARD_SCENE.instantiate()
 	card_container.add_child(e_deck)
 	e_deck.init_card(dummy_data, enemy)
-	e_deck.scale = Vector2(1, 1) # 덱은 약간 작게 보이도록 스케일 조정
+	e_deck.scale = e_deck.SCALE_HAND # 덱 크기를 핸드 스케일과 동일하게 맞춤
 	e_deck.cover.visible = true
 	e_deck.input_pickable = false
 	e_deck.global_position = enemy_deck_node.global_position
@@ -146,16 +147,13 @@ func _create_deck_visuals():
 
 func refill_deck(master: Master):
 	print("덱 리필: %s의 덱을 카드 데이터로 채웁니다." % master.name)
-	if(master == player):
-		for card_id in DeckLib.get_player_deck():
-			var amount = DeckLib.get_player_deck()[card_id]
-			for i in range(amount):
-				master.deck.append(card_id)
-	elif(master == enemy):
-		for card_id in DeckLib.get_enemy_deck():
-			var amount = DeckLib.get_enemy_deck()[card_id]
-			for i in range(amount):
-				master.deck.append(card_id)
+	
+	var deck_data = DeckLib.get_player_deck() if master == player else DeckLib.get_enemy_deck()
+	for card_id in deck_data:
+		var amount = deck_data[card_id]
+		for i in range(amount):
+			master.deck.append(card_id)
+			
 	master.deck.shuffle()
 	ui_manager.update()
 
@@ -164,6 +162,8 @@ func draw_cards(master: Master, amount: int):
 		if master.deck.size() == 0:
 			print("%s의 덱이 비었습니다!" % master.name)
 			refill_deck(master)
+			if master.deck.size() == 0:
+				break # 리필 후에도 덱이 비어있다면 탈출 (크래시 방지)
 		var new_card_id = master.deck.pop_front()
 		var new_card_data = CardDatabase.get_card_by_id(new_card_id)
 		if new_card_data == {}:
@@ -173,6 +173,10 @@ func draw_cards(master: Master, amount: int):
 	ui_manager.update()
 
 func add_to_hand(data: Dictionary, master_: Master):
+	if master_.hand.size() >= 10:
+		print("%s의 패가 가득 차서 '%s' 카드가 파괴되었습니다!" % [master_.name, data.get("name", "알 수 없음")])
+		return
+		
 	var new_card = CARD_SCENE.instantiate()
 	card_container.add_child(new_card)
 	new_card.init_card(data, master_)
@@ -233,7 +237,7 @@ func reposition_hand(master_: Master):
 				tween.parallel().tween_property(card, "scale", card.SCALE_HAND, 0.2).set_trans(Tween.TRANS_QUAD)
 
 
-func cast_magic(card: Area2D, master_: Master):
+func cast_magic(card: Area2D, master_: Master, target = null):
 	card.cover.visible = false
 
 	card.z_index = 100
@@ -254,7 +258,7 @@ func cast_magic(card: Area2D, master_: Master):
 		.tween_property(card, "scale", Vector2(0, 0), 0.1)\
 		.set_ease(Tween.EASE_IN_OUT)
 	tween.tween_callback(func():
-		ability_manager.trigger_ability("onUse", card) # 사용 시 발동
+		ability_manager.trigger_ability("onUse", card, target) # 타겟과 함께 사용 시 발동
 		card.z_index = 0
 		card.queue_free()
 	)
@@ -265,7 +269,7 @@ func cast_magic(card: Area2D, master_: Master):
 	print("마법 시전: %s가 %s 사용" % [master_.name, card.card_data["name"]])
 
 		
-func summon_to_slot(card: Area2D, slot_index: int, master_ : Master):
+func summon_to_slot(card: Area2D, slot_index: int, master_ : Master, target = null):
 	var slot_node = player_slot_nodes[slot_index] if master_ == player else enemy_slot_nodes[slot_index]
 
 	master_.hand.erase(card)
@@ -293,13 +297,13 @@ func summon_to_slot(card: Area2D, slot_index: int, master_ : Master):
 	card.global_position = slot_node.global_position # 플레이어 드롭 보정 및 적 트윈 완료 후 완벽한 슬롯 정중앙 스냅
 	await card.set_on_board(slot_index)
 	card.z_index = 0
-	ability_manager.trigger_ability("onUse", card) # 소환 시 발동 능력 체크
+	ability_manager.trigger_ability("onUse", card, target) # 타겟과 함께 사용 시 발동 능력 체크
 	reposition_hand(master_)
 	print("hand to bf: %s의 슬롯%d에 %s 소환" % [master_.name, slot_index, card.card_data["name"]])
 
 func change_turn():
 	for card in current_master.slot:
-		if card != null:
+		if is_instance_valid(card):
 			ability_manager.trigger_ability("onTurnEnd", card) #이전 턴 마스터 턴 미니언 종료 능력 활성
 			card.attackable = 0 # 턴이 끝나면 공격 횟수 초기화
 			card.update_display()
@@ -315,7 +319,7 @@ func change_turn():
 	current_master.refill_mana()
 
 	for card in current_master.slot: # 바뀐 턴 마스터 턴 미니언 시작 능력 활성
-		if card != null:
+		if is_instance_valid(card):
 			card.attackable = 1 # 소환된 카드들은 다음 턴부터 공격 가능하게 설정
 			ability_manager.trigger_ability("onTurnStart", card) # 플레이어 전장 카드의 턴 시작 시 발동 능력 체크
 			card.update_display() # 공격 가능 여부에 따라 카드 색상 업데이트
@@ -323,7 +327,6 @@ func change_turn():
 
 	if(current_master == enemy):
 		enemy_ai.start_enemy_turn() # 적 AI 돌리기
-		
 
 func _on_end_turn_button_pressed():
 	if current_master != player:
@@ -372,6 +375,7 @@ func attack_with_minion(attacker, target):
 			target.hp -= attacker.card_data["atk"]
 			attacker.update_display()
 			ui_manager.update()
+			_check_master_death(target) # 명치 데미지 후 생존 확인!
 		else:				 # 미니언 공격
 			ability_manager.trigger_ability("onHit", target) # 공격 후 발동 능력 체크
 			target.card_data["hp"] -= attacker.card_data["atk"]
@@ -392,6 +396,24 @@ func attack_with_minion(attacker, target):
 	_check_minion_death(target)
 	set_input_lock(false) # 공격 애니메이션 완료 후 입력 잠금 해제
 
+func _check_master_death(master: Master):
+	if master.hp <= 0:
+		game_over(master)
+
+func game_over(loser: Master):
+	set_input_lock(true) # 조작 완전 잠금
+	var winner = "플레이어" if loser == enemy else "적 AI"
+	print("\n==================================")
+	print("!!! 게임 종료 !!!")
+	print("승리자: %s" % winner)
+	print("==================================\n")
+	
+	# TODO: 여기에 화려한 승리/패배 UI를 띄우는 코드를 추가하세요!
+	if loser == enemy:
+		dialogue_manager.start_dialogue([{"image": "res://Images/enemy.jpg", "text": "크윽... 내가 지다니..."}])
+	else:
+		dialogue_manager.start_dialogue([{"image": "res://Images/enemy.jpg", "text": "하하하! 나의 승리다!"}])
+
 func _check_minion_death(target):
 	if is_instance_valid(target) and target is not Master and target.card_data["hp"] <= 0:
 		print("%s의 %s 전사" % [target.master.name, target.card_data["name"]])
@@ -406,23 +428,31 @@ func destroy_minion(card: Area2D):
 func set_input_lock(is_locked: bool):
 	input_blocker.visible = is_locked
 
+func _has_taunt(card: Area2D) -> bool:
+	if not is_instance_valid(card) or not card.card_data.has("abilities"): return false
+	var abilities = card.card_data["abilities"]
+	if abilities.has("keyword"):
+		var kw = abilities["keyword"]
+		if typeof(kw) == TYPE_ARRAY:
+			return kw.any(func(k): return typeof(k) == TYPE_DICTIONARY and k.get("ID") == "TAUNT")
+		elif typeof(kw) == TYPE_DICTIONARY:
+			return kw.get("ID") == "TAUNT"
+	return false
+
 func _is_targetable(_attacker, target) -> bool:
 	if not is_instance_valid(target): return false
 
 	var target_owner = target if target is Master else target.master
 	
-	# 1. 가장 앞에 있는 타겟 찾기 (Slot 0 -> 1 -> 2 -> Master 순서)
-	var valid_target = null
-	for i in range(target_owner.slot.size()):
-		if is_instance_valid(target_owner.slot[i]):
-			valid_target = target_owner.slot[i]
-			break
+	var has_taunt = target_owner.slot.any(func(c): return is_instance_valid(c) and _has_taunt(c))
 			
-	if valid_target == null:
-		valid_target = target_owner # 미니언이 하나도 없으면 마스터가 타겟
+	if has_taunt:
+		# 도발 하수인이 있다면, 본체(Master)는 칠 수 없고 오직 도발 하수인만 타겟 가능
+		if target is Master: return false
+		return _has_taunt(target)
 		
-	# 2. 지정된 타겟이 현재 칠 수 있는 '가장 앞의 타겟'이 맞는지 확인
-	return target == valid_target
+	# 도발이 없을 때: 본체(Master)와 모든 하수인 타겟팅 가능
+	return true
 
 func set_target_highlights(attacker: Area2D, is_on: bool):
 	var target_owner = enemy if attacker.master == player else player
@@ -434,17 +464,20 @@ func set_target_highlights(attacker: Area2D, is_on: bool):
 	target_owner.avatar.modulate = Color.WHITE # 마스터 아바타 초기화
 	
 	if is_on:
-		var valid_target = null
-		for i in range(target_owner.slot.size()):
-			if is_instance_valid(target_owner.slot[i]):
-				valid_target = target_owner.slot[i]
-				break
+		var has_taunt = target_owner.slot.any(func(c): return is_instance_valid(c) and _has_taunt(c))
 		
-		if valid_target == null:
-			valid_target = target_owner
-			
-		# 현재 공격 가능한 단 하나의 대상에게만 붉은 오라 표시
-		if valid_target is Master:
-			valid_target.avatar.modulate = Color(1.0, 0.2, 0.2, 1.0) # 마스터는 붉게 틴트
+		for card in target_owner.slot:
+			if is_instance_valid(card):
+				if has_taunt and not _has_taunt(card):
+					continue # 도발이 있는데 자신은 도발 하수인이 아니면 하이라이트 패스
+				card.set_target_highlight(true)
+				
+		if not has_taunt:
+			target_owner.avatar.modulate = Color(1.0, 0.2, 0.2, 1.0)
+
+func show_description(card: Area2D):
+	if description_manager:
+		if description_manager.has_method("show_card"):
+			description_manager.show_card(card.card_data, card.global_position) # 카드 데이터와 '원본 카드 위치'를 함께 넘겨줌
 		else:
-			valid_target.set_target_highlight(true) # 미니언은 빨간 오라
+			description_manager.show()

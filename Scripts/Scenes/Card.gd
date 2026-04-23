@@ -1,9 +1,10 @@
 extends Area2D
 
 # 연출용 스케일 값 정의 (상수로 관리해!!!!!)
-const SCALE_HAND = Vector2(0.8, 0.8)   # 손패에서는 작게!!!!!
-const SCALE_DRAG = Vector2(1.2, 1.2)   # 드래그 중엔 크게!!!!! (1.2는 너무 커!!!!!)
-const SCALE_BOARD = Vector2(1, 1)  # 전장에선 원래대로!!!!!
+const SCALE_HAND = Vector2(0.4, 0.4)   # 손패에서는 작게
+const SCALE_DRAG = Vector2(0.6, 0.6)   # 
+const SCALE_BOARD = Vector2(0.45, 0.45)  # 전장에선 원래대로
+const SCALE_DESC = Vector2(1, 1)   # 설명 창에서의 크기
 
 const COLOR_ATTACKABLE = Color(0, 0.5, 0, 0.5) # 아군 공격 가능 (초록색 오라)
 const COLOR_TARGETABLE = Color(1.0, 0, 0, 0.5) # 타겟으로 지정됨 (빨간색 오라)
@@ -40,12 +41,15 @@ var base_rotation: float = 0.0
 var base_z_index: int = 0
 var card_tween: Tween
 var aura_tween: Tween # 오라 애니메이션 전용 트윈
+var _current_aura_color: Color = Color.TRANSPARENT # 오라 중복 실행 방지용
 
 func _ready():
 	scale = SCALE_HAND
 	
 	input_pickable = true
 	input_event.connect(_on_area_2d_input_event)
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
 	aura.visible = false
 
 func init_card(data: Dictionary, master_: Object):
@@ -66,21 +70,23 @@ func init_card(data: Dictionary, master_: Object):
 	if self.master == battle_scene.enemy:
 		cover.visible = true
 
+func _on_mouse_entered():
+	if current_state == State.IN_HAND and master == battle_scene.player:
+		battle_scene.update_hover(self)
+
+func _on_mouse_exited():
+	if battle_scene.hovered_card == self:
+		battle_scene.update_hover(null)
+
 func _on_area_2d_input_event(_viewport, event, _shape_idx):
-	if battle_scene.current_master != battle_scene.player:
-		return
-	if master != battle_scene.player:
+	if battle_scene.current_master != battle_scene.player or master != battle_scene.player:
 		return
 		
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
-				# 손패에 있는 카드일 경우, 현재 최상단으로 판정되어 호버(튀어나온)된 카드만 잡히도록 강제함
-				if current_state == State.IN_HAND and battle_scene.hovered_card != self:
-					return
-					
-				get_viewport().set_input_as_handled() # 카드 중복 클릭 방지 (맨 위 카드만 잡히게 함)
-				input_manager.start_drag(self)
+				# 드래그 감지 로직은 겹침 버그 방지를 위해 InputManager._input()의 물리 광선(RayCast) 시스템으로 이관되었습니다.
+				pass
 
 func update_display():
 	if card_data["type"] == "minion":
@@ -142,6 +148,14 @@ func set_target_highlight(is_on: bool):
 		update_display() # 본래 attackable 상태에 맞게 visible 초기화
 
 func _animate_aura(is_on: bool, target_color: Color):
+	# 동일한 색상으로 이미 애니메이션 중이거나, 이미 꺼져 있는 경우 트윈 재시작(깜빡임) 방지
+	if is_on and aura.visible and _current_aura_color == target_color and aura_tween and aura_tween.is_valid():
+		return
+	if not is_on and not aura.visible:
+		return
+		
+	_current_aura_color = target_color if is_on else Color.TRANSPARENT
+
 	if aura_tween and aura_tween.is_valid():
 		aura_tween.kill() # 진행 중이던 오라 애니메이션 초기화
 		

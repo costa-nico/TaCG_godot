@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://ckdhohu0a2bc5"]
+
+[ext_resource type="Texture2D" uid="uid://ngstfee7uma7" path="res://Images/slot.png" id="1_vqo0j"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_8uoga"]
+size = Vector2(230, 330)
+
+[node name="P1" type="Area2D" unique_id=519582756]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=682468980]
+shape = SubResource("RectangleShape2D_8uoga")
+debug_color = Color(0, 0, 1, 0.23529412)
+metadata/_edit_lock_ = true
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=19185409]
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("1_vqo0j")

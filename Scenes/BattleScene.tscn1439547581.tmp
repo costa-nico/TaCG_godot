@@ -1,0 +1,235 @@
+[gd_scene format=3 uid="uid://cpscom4ltkyn5"]
+
+[ext_resource type="Script" uid="uid://b132y1f4xe4ep" path="res://Scripts/Scenes/BattleScene.gd" id="1_ltshs"]
+[ext_resource type="Texture2D" uid="uid://bi2jmewg3wie8" path="res://Images/background.png" id="2_8uoga"]
+[ext_resource type="Script" uid="uid://uilqo753i4wr" path="res://Scripts/BattleManagers/UIManager.gd" id="2_28s16"]
+[ext_resource type="Script" uid="uid://drd7twpy6vhb4" path="res://Scripts/BattleManagers/EnemyAIManager.gd" id="2_gkmpl"]
+[ext_resource type="Script" uid="uid://drd4apjqq0ckj" path="res://Scripts/BattleManagers/AbilityManager.gd" id="3_3mvhd"]
+[ext_resource type="PackedScene" uid="uid://ckdhohu0a2bc5" path="res://Scenes/Slot.tscn" id="4_2tp6q"]
+[ext_resource type="Script" uid="uid://cntgkha5wf75g" path="res://Scripts/BattleManagers/InputManager.gd" id="4_ftvu5"]
+[ext_resource type="PackedScene" uid="uid://nbvvkti3gbm5" path="res://Scenes/DialogueScene.tscn" id="5_dialogue"]
+[ext_resource type="PackedScene" uid="uid://mvqhh4oc4emp" path="res://Scenes/DescriptionScene.tscn" id="6_2tp6q"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2tp6q"]
+size = Vector2(215.125, 216.625)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ixjr5"]
+size = Vector2(239.125, 232.625)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_kwfy1"]
+size = Vector2(200, 300)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_47u5s"]
+size = Vector2(1754.5, 434.5)
+
+[node name="BattleScene" type="Node2D" unique_id=291385498]
+script = ExtResource("1_ltshs")
+
+[node name="battlefield" type="Sprite2D" parent="." unique_id=43824209]
+position = Vector2(960, 540)
+texture = ExtResource("2_8uoga")
+
+[node name="EnemyAvatar" type="Area2D" parent="." unique_id=123072701]
+position = Vector2(1712, 192)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyAvatar" unique_id=2123586831]
+position = Vector2(-11.5625, -12.3125)
+shape = SubResource("RectangleShape2D_2tp6q")
+debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
+
+[node name="PlayerAvatar" type="Sprite2D" parent="EnemyAvatar" unique_id=126097242]
+
+[node name="PlayerAvatar" type="Area2D" parent="." unique_id=30001336]
+position = Vector2(199, 907)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerAvatar" unique_id=2099592078]
+position = Vector2(-6.5625, 0.6875)
+shape = SubResource("RectangleShape2D_ixjr5")
+debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
+
+[node name="PlayerAvatar" type="Sprite2D" parent="PlayerAvatar" unique_id=69917054]
+
+[node name="Slots" type="Node2D" parent="." unique_id=1821842232]
+position = Vector2(960, 539)
+
+[node name="P3" parent="Slots" unique_id=519582756 instance=ExtResource("4_2tp6q")]
+position = Vector2(-333, 170)
+
+[node name="P2" parent="Slots" unique_id=1957023284 instance=ExtResource("4_2tp6q")]
+position = Vector2(0, 170)
+
+[node name="P1" parent="Slots" unique_id=424052762 instance=ExtResource("4_2tp6q")]
+position = Vector2(333, 170)
+
+[node name="E1" parent="Slots" unique_id=233045580 instance=ExtResource("4_2tp6q")]
+position = Vector2(333, -170)
+
+[node name="E2" parent="Slots" unique_id=1754445132 instance=ExtResource("4_2tp6q")]
+position = Vector2(0, -170)
+
+[node name="E3" parent="Slots" unique_id=2098366645 instance=ExtResource("4_2tp6q")]
+position = Vector2(-333, -170)
+
+[node name="Cards" type="Node2D" parent="." unique_id=281149523]
+
+[node name="EnemyDeck" type="Node2D" parent="." unique_id=1105448632]
+position = Vector2(200, 150)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyDeck" unique_id=466808913]
+shape = SubResource("RectangleShape2D_kwfy1")
+debug_color = Color(0.8303168, 0.0014510459, 0.945857, 0.41960785)
+
+[node name="PlayerDeck" type="Node2D" parent="." unique_id=732787777]
+position = Vector2(1720, 930)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerDeck" unique_id=1078085657]
+shape = SubResource("RectangleShape2D_kwfy1")
+debug_color = Color(0.8303168, 0.0014510459, 0.945857, 0.41960785)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1625501952]
+script = ExtResource("2_28s16")
+
+[node name="EnemyDeckLabel" type="Label" parent="UI" unique_id=1138552895]
+offset_left = 130.0
+offset_top = 37.0
+offset_right = 199.0
+offset_bottom = 120.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 60
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="PlayerDeckLabel" type="Label" parent="UI" unique_id=176107061]
+offset_left = 1641.0
+offset_top = 807.0
+offset_right = 1710.0
+offset_bottom = 890.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 60
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="EndTurnButton" type="Button" parent="UI" unique_id=159621378]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -164.0
+offset_top = -98.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/icon_disabled_color = Color(0.5803922, 0.5803922, 0.5803922, 0.6745098)
+theme_override_font_sizes/font_size = 32
+text = "턴 종료"
+metadata/_edit_use_anchors_ = true
+
+[node name="PlayerManaLabel" type="Label" parent="UI" unique_id=1105034712]
+offset_left = 337.0
+offset_top = 907.0
+offset_right = 497.0
+offset_bottom = 1017.0
+theme_override_colors/font_color = Color(0.25882354, 0.23529412, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "0/0"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="PlayerHPLabel" type="Label" parent="UI" unique_id=1671592918]
+offset_left = 369.0
+offset_top = 807.0
+offset_right = 461.0
+offset_bottom = 917.0
+theme_override_colors/font_color = Color(1, 0.19607843, 0.19607843, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="EnemyHPLabel" type="Label" parent="UI" unique_id=151190605]
+offset_left = 1460.0
+offset_top = 37.0
+offset_right = 1560.0
+offset_bottom = 147.0
+theme_override_colors/font_color = Color(1, 0.19607843, 0.19607843, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "00"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="EnemyManaLabel" type="Label" parent="UI" unique_id=1154154890]
+offset_left = 1433.0
+offset_top = 147.0
+offset_right = 1593.0
+offset_bottom = 257.0
+theme_override_colors/font_color = Color(0.25882354, 0.23529412, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 15
+theme_override_font_sizes/font_size = 80
+text = "0/0"
+horizontal_alignment = 1
+vertical_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="AttackLine" type="Line2D" parent="UI" unique_id=331509183]
+
+[node name="DialogueManager" parent="UI" unique_id=1234567890 instance=ExtResource("5_dialogue")]
+visible = false
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="DescriptionManager" parent="UI" unique_id=1873690942 instance=ExtResource("6_2tp6q")]
+visible = false
+
+[node name="InputBlocker" type="Control" parent="." unique_id=2107461306]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+
+[node name="MagicSlot" type="Area2D" parent="." unique_id=730773853]
+visible = false
+position = Vector2(956, 539)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MagicSlot" unique_id=1735406566]
+shape = SubResource("RectangleShape2D_47u5s")
+debug_color = Color(0.6096093, 0.36287096, 1, 0.41960785)
+
+[node name="PlayerHand" type="Node2D" parent="." unique_id=1675373293]
+visible = false
+position = Vector2(960, 930)
+
+[node name="EnemyHand" type="Node2D" parent="." unique_id=378919369]
+visible = false
+position = Vector2(960, 150)
+
+[node name="Managers" type="Node" parent="." unique_id=1735004178]
+
+[node name="EnemyAIManager" type="Node" parent="Managers" unique_id=742652317]
+script = ExtResource("2_gkmpl")
+
+[node name="InputManager" type="Node" parent="Managers" unique_id=1196008837]
+script = ExtResource("4_ftvu5")
+
+[node name="AbilityManager" type="Node" parent="Managers" unique_id=692912661]
+script = ExtResource("3_3mvhd")
+
+[connection signal="pressed" from="UI/EndTurnButton" to="." method="_on_end_turn_button_pressed"]

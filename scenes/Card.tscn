@@ -1,21 +1,21 @@
 [gd_scene format=3 uid="uid://d2njvvhegumam"]
 
 [ext_resource type="Script" uid="uid://npbu2uday7qd" path="res://Scripts/Scenes/Card.gd" id="1_pnb5n"]
-[ext_resource type="Texture2D" uid="uid://d06jnl76ym6ms" path="res://Images/card_cover.png" id="2_3p273"]
+[ext_resource type="Texture2D" uid="uid://cemtgycwlw0sh" path="res://Images/card_cover.png" id="2_3p273"]
 [ext_resource type="Texture2D" uid="uid://ble75fb1hc5xs" path="res://Images/card_bg.png" id="2_h8wm0"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8wm0"]
 bg_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 20
-corner_radius_top_right = 20
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_h8wm0"]
-size = Vector2(150, 180)
+size = Vector2(300, 360)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_pnb5n"]
-size = Vector2(200, 300)
+size = Vector2(400, 600)
 
 [node name="Card" type="Area2D" unique_id=1663776642]
 script = ExtResource("1_pnb5n")
@@ -26,20 +26,33 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -110.0
-offset_top = -160.0
-offset_right = 110.0
-offset_bottom = 160.0
+offset_left = -220.0
+offset_top = -320.0
+offset_right = 220.0
+offset_bottom = 320.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 4
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_h8wm0")
 
-[node name="Background" type="Sprite2D" parent="." unique_id=574405956]
-texture = ExtResource("2_h8wm0")
-
 [node name="Illust" type="Area2D" parent="." unique_id=928449883]
 position = Vector2(0, -5)
+
+[node name="ColorRect" type="ColorRect" parent="Illust" unique_id=1701457051]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -180.0
+offset_right = 150.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.6449482, 0.99999994, 0.9955531, 1)
 
 [node name="Texture" type="Sprite2D" parent="Illust" unique_id=1890261722]
 position = Vector2(0, -1)
@@ -48,6 +61,9 @@ position = Vector2(0, -1)
 shape = SubResource("RectangleShape2D_h8wm0")
 disabled = true
 
+[node name="Background" type="Sprite2D" parent="." unique_id=574405956]
+texture = ExtResource("2_h8wm0")
+
 [node name="Labels" type="Control" parent="." unique_id=66215875]
 layout_mode = 3
 anchors_preset = 8
@@ -55,10 +71,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -92.0
-offset_top = -143.0
-offset_right = 92.0
-offset_bottom = 143.0
+offset_left = -180.0
+offset_top = -300.0
+offset_right = 180.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -68,13 +84,14 @@ layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -35.0
-offset_right = 35.0
-offset_bottom = 50.0
+offset_left = -60.0
+offset_top = 10.0
+offset_right = 60.0
+offset_bottom = 94.0
 grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 27
+theme_override_font_sizes/font_size = 60
 text = "이름"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -86,7 +103,7 @@ offset_bottom = 49.0
 theme_override_colors/font_color = Color(0.29333335, 0.5063266, 1, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 80
 text = "0"
 horizontal_alignment = 2
 
@@ -101,7 +118,7 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.9999996, 0.86684203, 0.12807226, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 80
 text = "1"
 
 [node name="HpLabel" type="Label" parent="Labels" unique_id=242511331]
@@ -118,7 +135,7 @@ grow_vertical = 0
 theme_override_colors/font_color = Color(0.99694544, 6.2329323e-06, 1.540184e-06, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 0.5882353)
 theme_override_constants/outline_size = 10
-theme_override_font_sizes/font_size = 35
+theme_override_font_sizes/font_size = 80
 text = "5"
 horizontal_alignment = 2
 
@@ -139,6 +156,5 @@ mouse_filter = 2
 texture = ExtResource("2_3p273")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1565543763]
-visible = false
 shape = SubResource("RectangleShape2D_pnb5n")
 debug_color = Color(0.81465137, 0.0019754786, 0.9761837, 0.1882353)

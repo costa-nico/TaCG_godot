@@ -1,18 +1,20 @@
 [gd_scene format=3 uid="uid://cpscom4ltkyn5"]
 
 [ext_resource type="Script" uid="uid://b132y1f4xe4ep" path="res://Scripts/Scenes/BattleScene.gd" id="1_ltshs"]
-[ext_resource type="Texture2D" uid="uid://caevlp61v84yc" path="res://Images/background.png" id="2_8uoga"]
+[ext_resource type="Texture2D" uid="uid://bi2jmewg3wie8" path="res://Images/background.png" id="2_8uoga"]
 [ext_resource type="Script" uid="uid://uilqo753i4wr" path="res://Scripts/BattleManagers/UIManager.gd" id="2_28s16"]
 [ext_resource type="Script" uid="uid://drd7twpy6vhb4" path="res://Scripts/BattleManagers/EnemyAIManager.gd" id="2_gkmpl"]
 [ext_resource type="Script" uid="uid://drd4apjqq0ckj" path="res://Scripts/BattleManagers/AbilityManager.gd" id="3_3mvhd"]
+[ext_resource type="PackedScene" uid="uid://ckdhohu0a2bc5" path="res://Scenes/Slot.tscn" id="4_2tp6q"]
 [ext_resource type="Script" uid="uid://cntgkha5wf75g" path="res://Scripts/BattleManagers/InputManager.gd" id="4_ftvu5"]
 [ext_resource type="PackedScene" uid="uid://nbvvkti3gbm5" path="res://Scenes/DialogueScene.tscn" id="5_dialogue"]
+[ext_resource type="PackedScene" uid="uid://mvqhh4oc4emp" path="res://Scenes/DescriptionScene.tscn" id="6_2tp6q"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2tp6q"]
-size = Vector2(230, 230)
+size = Vector2(215.125, 216.625)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_8uoga"]
-size = Vector2(230, 330)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ixjr5"]
+size = Vector2(239.125, 232.625)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kwfy1"]
 size = Vector2(200, 300)
@@ -28,9 +30,10 @@ position = Vector2(960, 540)
 texture = ExtResource("2_8uoga")
 
 [node name="EnemyAvatar" type="Area2D" parent="." unique_id=123072701]
-position = Vector2(1708, 156)
+position = Vector2(1712, 192)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyAvatar" unique_id=2123586831]
+position = Vector2(-11.5625, -12.3125)
 shape = SubResource("RectangleShape2D_2tp6q")
 debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
 
@@ -40,50 +43,34 @@ debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
 position = Vector2(199, 907)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerAvatar" unique_id=2099592078]
-shape = SubResource("RectangleShape2D_2tp6q")
+position = Vector2(-6.5625, 0.6875)
+shape = SubResource("RectangleShape2D_ixjr5")
 debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
 
 [node name="PlayerAvatar" type="Sprite2D" parent="PlayerAvatar" unique_id=69917054]
 
-[node name="Cards" type="Node2D" parent="." unique_id=281149523]
-
 [node name="Slots" type="Node2D" parent="." unique_id=1821842232]
+position = Vector2(960, 539)
 
-[node name="P3" type="Area2D" parent="Slots" unique_id=1071557248]
-position = Vector2(202, 541)
+[node name="P3" parent="Slots" unique_id=519582756 instance=ExtResource("4_2tp6q")]
+position = Vector2(-333, 170)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/P3" unique_id=574029390]
-shape = SubResource("RectangleShape2D_8uoga")
+[node name="P2" parent="Slots" unique_id=1957023284 instance=ExtResource("4_2tp6q")]
+position = Vector2(0, 170)
 
-[node name="P2" type="Area2D" parent="Slots" unique_id=799463715]
-position = Vector2(472, 541)
+[node name="P1" parent="Slots" unique_id=424052762 instance=ExtResource("4_2tp6q")]
+position = Vector2(333, 170)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/P2" unique_id=146616510]
-shape = SubResource("RectangleShape2D_8uoga")
+[node name="E1" parent="Slots" unique_id=233045580 instance=ExtResource("4_2tp6q")]
+position = Vector2(333, -170)
 
-[node name="P1" type="Area2D" parent="Slots" unique_id=1513989866]
-position = Vector2(741, 541)
+[node name="E2" parent="Slots" unique_id=1754445132 instance=ExtResource("4_2tp6q")]
+position = Vector2(0, -170)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/P1" unique_id=225794204]
-shape = SubResource("RectangleShape2D_8uoga")
+[node name="E3" parent="Slots" unique_id=2098366645 instance=ExtResource("4_2tp6q")]
+position = Vector2(-333, -170)
 
-[node name="E1" type="Area2D" parent="Slots" unique_id=1750308337]
-position = Vector2(1163, 540)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/E1" unique_id=857406034]
-shape = SubResource("RectangleShape2D_8uoga")
-
-[node name="E2" type="Area2D" parent="Slots" unique_id=1047818001]
-position = Vector2(1433, 541)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/E2" unique_id=1540514165]
-shape = SubResource("RectangleShape2D_8uoga")
-
-[node name="E3" type="Area2D" parent="Slots" unique_id=1628062448]
-position = Vector2(1703, 540)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Slots/E3" unique_id=1769097457]
-shape = SubResource("RectangleShape2D_8uoga")
+[node name="Cards" type="Node2D" parent="." unique_id=281149523]
 
 [node name="EnemyDeck" type="Node2D" parent="." unique_id=1105448632]
 position = Vector2(200, 150)
@@ -208,6 +195,9 @@ visible = false
 offset_right = 1920.0
 offset_bottom = 1080.0
 
+[node name="DescriptionManager" parent="UI" unique_id=1873690942 instance=ExtResource("6_2tp6q")]
+visible = false
+
 [node name="InputBlocker" type="Control" parent="." unique_id=2107461306]
 visible = false
 layout_mode = 3
@@ -224,16 +214,12 @@ shape = SubResource("RectangleShape2D_47u5s")
 debug_color = Color(0.6096093, 0.36287096, 1, 0.41960785)
 
 [node name="PlayerHand" type="Node2D" parent="." unique_id=1675373293]
+visible = false
 position = Vector2(960, 930)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerHand" unique_id=2035503877]
-shape = SubResource("RectangleShape2D_kwfy1")
-
 [node name="EnemyHand" type="Node2D" parent="." unique_id=378919369]
+visible = false
 position = Vector2(960, 150)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyHand" unique_id=573548534]
-shape = SubResource("RectangleShape2D_kwfy1")
 
 [node name="Managers" type="Node" parent="." unique_id=1735004178]
 

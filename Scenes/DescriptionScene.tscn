@@ -1,0 +1,84 @@
+[gd_scene format=3 uid="uid://mvqhh4oc4emp"]
+
+[ext_resource type="Script" uid="uid://t5mlxrlvpt1f" path="res://Scripts/Scenes/DescriptionManager.gd" id="1_cqeod"]
+
+[node name="DescriptionScene" type="Control" unique_id=1873690942]
+process_mode = 3
+custom_minimum_size = Vector2(1920, 1080)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_cqeod")
+
+[node name="CardNode" type="Node2D" parent="." unique_id=553751744]
+position = Vector2(400, 544)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=326356297]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -1273.4299
+offset_top = -400.0
+offset_right = -273.4297
+offset_bottom = 400.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="InfoPanel" type="Panel" parent="VBoxContainer" unique_id=1385843413]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+
+[node name="InfoContainer" type="MarginContainer" parent="VBoxContainer/InfoPanel" unique_id=1662062906]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InfoLabel" type="Label" parent="VBoxContainer/InfoPanel/InfoContainer" unique_id=1256036980]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 36
+text = "인포"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Control" type="Control" parent="VBoxContainer" unique_id=1463485167]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.1
+
+[node name="DescriptionPanel" type="Panel" parent="VBoxContainer" unique_id=1032778109]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 5.0
+mouse_filter = 1
+
+[node name="DescriptionContainer" type="MarginContainer" parent="VBoxContainer/DescriptionPanel" unique_id=789339295]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 15
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer/DescriptionPanel/DescriptionContainer" unique_id=1847812052]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 36
+text = "설명"
+horizontal_alignment = 1

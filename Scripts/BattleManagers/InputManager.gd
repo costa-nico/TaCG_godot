@@ -8,27 +8,115 @@ extends Node
 var dragging_card: Area2D = null
 var current_attack_line_end: Vector2 = Vector2.ZERO # 어택 라인의 현재 끝점을 기억 (스냅 애니메이션용)
 
+var target_selection_card: Area2D = null
+var pending_drop_info: Dictionary = {}
+
+enum InputState {
+	IDLE,
+	DRAGGING_CARD,
+	UI_OPEN,
+	SELECTING_TARGET
+}
+
+var current_state: InputState = InputState.IDLE
+
+var drag_start_pos: Vector2 = Vector2.ZERO
+var drag_start_time: int = 0
+
+var possible_click_card: Area2D = null # 드래그가 불가능한 전장 카드(적 등)의 클릭 감지용
+
+func set_state(new_state: InputState) -> void:
+	if current_state == new_state:
+		return
+		
+	var old_state = current_state
+	
+	if new_state == InputState.UI_OPEN:
+		battle_scene.update_hover(null)
+		if old_state == InputState.DRAGGING_CARD and is_instance_valid(dragging_card):
+			handle_right_click(dragging_card)
+		possible_click_card = null
+		
+	current_state = new_state
+
 func _process(_delta: float) -> void:
-	if dragging_card:
-		match dragging_card.current_state:
-			dragging_card.State.DRAGGING_TO_USE:
-				_handle_use_drag()
-			dragging_card.State.DRAGGING_TO_ATTACK:
-				_handle_attack_drag()
-	else:
-		_handle_hover() # 드래그 중이 아닐 때는 호버 상태를 감지합니다!
+	match current_state:
+		InputState.DRAGGING_CARD:
+			if dragging_card:
+				match dragging_card.current_state:
+					dragging_card.State.DRAGGING_TO_USE:
+						_handle_use_drag()
+					dragging_card.State.DRAGGING_TO_ATTACK:
+						_handle_attack_drag()
+		InputState.SELECTING_TARGET:
+			if is_instance_valid(target_selection_card):
+				update_attack_line(target_selection_card.global_position)
+		InputState.IDLE:
+			_handle_hover() # 대기 상태일 때만 호버를 감지합니다
 
 # 글로벌 입력 감지: Area2D 바깥으로 마우스가 나간 상태에서 클릭을 뗄 때를 대비함 (공격 버그 해결)
 func _input(event: InputEvent) -> void:
-	if dragging_card != null:
-		if event is InputEventMouseButton:
-			if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
-				end_drag(dragging_card)
-			elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+	match current_state:
+		InputState.UI_OPEN:
+			return # UI 창이 열려있을 때는 전장 클릭/호버 완벽 차단
+		InputState.IDLE:
+			_handle_idle_input(event)
+		InputState.DRAGGING_CARD:
+			_handle_drag_input(event)
+		InputState.SELECTING_TARGET:
+			if event is InputEventMouseButton:
+				if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+					_confirm_target_selection()
+					get_viewport().set_input_as_handled()
+				elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+					_cancel_target_selection()
+					get_viewport().set_input_as_handled()
+
+func _handle_idle_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				possible_click_card = _get_card_under_mouse()
+				drag_start_pos = battle_scene.get_global_mouse_position()
+				drag_start_time = Time.get_ticks_msec()
+
+				if possible_click_card != null and possible_click_card.master == battle_scene.player and battle_scene.current_master == battle_scene.player:
+					start_drag(possible_click_card)
+					get_viewport().set_input_as_handled()
+			else:
+				var dist = battle_scene.get_global_mouse_position().distance_to(drag_start_pos)
+				var time_elapsed = Time.get_ticks_msec() - drag_start_time
+
+				if possible_click_card != null:
+					if dist < 15.0 and time_elapsed < 250:
+						if battle_scene.has_method("show_description"):
+							battle_scene.show_description(possible_click_card)
+				
+				possible_click_card = null
+
+func _handle_drag_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			var dist = battle_scene.get_global_mouse_position().distance_to(drag_start_pos)
+			var time_elapsed = Time.get_ticks_msec() - drag_start_time
+
+			if dragging_card != null:
+				if dist < 15.0 and time_elapsed < 250:
+					var clicked_card = dragging_card
+					handle_right_click(clicked_card)
+					if battle_scene.has_method("show_description"):
+						battle_scene.show_description(clicked_card)
+				else:
+					end_drag(dragging_card)
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			if dragging_card != null:
 				handle_right_click(dragging_card)
 				get_viewport().set_input_as_handled()
 
 func start_drag(card):
+	set_state(InputState.DRAGGING_CARD)
+	drag_start_pos = battle_scene.get_global_mouse_position()
+	drag_start_time = Time.get_ticks_msec()
 	dragging_card = card
 	battle_scene.update_hover(null) # 드래그 시작 시 호버 상태 강제 해제
 	card.z_index = 100
@@ -56,6 +144,11 @@ func end_drag(card):
 		card.State.DRAGGING_TO_ATTACK:
 			end_attack_line(card)
 			card.current_state = card.State.ON_BOARD
+		card.State.ON_BOARD:
+			card.z_index = 0
+			
+	if current_state != InputState.SELECTING_TARGET:
+		set_state(InputState.IDLE)
 
 func _handle_hover():
 	var space_state = battle_scene.get_world_2d().direct_space_state
@@ -87,15 +180,10 @@ func _handle_use_drag():
 	
 	if card.card_data["type"] == "minion":
 		if what_is_under["has_slot"] and what_is_under["slot_side"] == "player" and what_is_under["is_slot_empty"]:
-			target_pos = what_is_under["slot"].global_position # Area2D 슬롯의 중심 좌표를 바로 사용
-
+			target_pos = what_is_under["slot"].global_position
 	elif card.card_data["type"] == "magic":
-		# 다른 영역은 무시하고, 오직 마우스가 매직 슬롯 영역(Area2D) 안에 들어왔을 때만 중앙으로 스냅!
-		if what_is_under["has_magic_slot"]:
+		if what_is_under["has_magic_slot"] or what_is_under["has_slot"] or what_is_under["has_minion"] or what_is_under["has_master"]:
 			target_pos = battle_scene.magic_slot.global_position
-		
-	# 매 프레임 초기화되는 트윈 대신 선형 보간(lerp)을 사용하여 
-	# 마우스 이동은 부드럽게, 슬롯 위에서는 자석처럼 쫀득하게 달라붙도록 만듭니다.
 	var weight = clamp(30.0 * get_process_delta_time(), 0.0, 1.0) # 프레임 저하 시 목표 위치를 초과하여 진동하는 것 방지
 	card.global_position = card.global_position.lerp(target_pos, weight)
 
@@ -122,18 +210,27 @@ func handle_right_click(card):
 		attack_line.visible = false
 		battle_scene.set_target_highlights(card, false) # 우클릭 취소 시 하이라이트 끄기
 		card.current_state = card.State.ON_BOARD
+		card.z_index = 0
+		dragging_card = null
+	elif card.current_state == card.State.ON_BOARD:
+		card.z_index = 0
 		dragging_card = null
 	elif card.current_state == card.State.DRAGGING_TO_USE:
 		dragging_card = null
 		return_to_hand(card, "우클릭으로 손패로 돌아감")
+		
+	set_state(InputState.IDLE)
 		
 
 func check_drop(card: Area2D):
 	var what_is_under = get_target_under_mouse()
 	if card.card_data["type"] == "minion":
 		if what_is_under["has_slot"] and what_is_under["slot_side"] == "player" and what_is_under["is_slot_empty"]:
+			if battle_scene.ability_manager.needs_target(card.card_data):
+				start_target_selection(card, what_is_under)
+				return
+				
 			if not _try_consume_mana_and_drop(card): return
-			# BattleScene의 summon_to_slot 시그니처(card, index, master)에 맞춰 호출
 			card.z_index = 0
 			battle_scene.summon_to_slot(card, what_is_under["slot_index"], battle_scene.player)
 			card.remove_placeholder()
@@ -145,6 +242,14 @@ func check_drop(card: Area2D):
 	elif card.card_data["type"] == "magic":
 		# 마법 슬롯, 일반 빈 슬롯, 미니언, 마스터 등 전장 영역 어디든 시전 가능하도록 조건 확대!
 		if what_is_under["has_magic_slot"] or what_is_under["has_slot"] or what_is_under["has_minion"] or what_is_under["has_master"]:
+			if battle_scene.ability_manager.has_targeting_ability(card.card_data):
+				if battle_scene.ability_manager.needs_target(card.card_data):
+					start_target_selection(card, what_is_under)
+					return
+				else:
+					return_to_hand(card, "지정할 수 있는 대상이 없습니다.")
+					return
+				
 			if not _try_consume_mana_and_drop(card): return
 			card.remove_placeholder()
 			card.z_index = 0
@@ -153,6 +258,67 @@ func check_drop(card: Area2D):
 		else:
 			return_to_hand(card, "마법을 시전할 전장 영역에 놓아주세요.")
 			return
+
+func start_target_selection(card: Area2D, drop_info: Dictionary):
+	target_selection_card = card
+	pending_drop_info = drop_info
+	
+	if card.card_data["type"] == "minion":
+		card.global_position = drop_info["slot"].global_position
+	elif card.card_data["type"] == "magic":
+		card.global_position = battle_scene.magic_slot.global_position
+		
+	card.z_index = 100
+	set_state(InputState.SELECTING_TARGET)
+	start_attack_line(card)
+
+func _confirm_target_selection():
+	var what_is_under = get_target_under_mouse()
+	var target = null
+	
+	if what_is_under["has_minion"]: target = what_is_under["minion"]
+	elif what_is_under["has_master"]: target = what_is_under["master"]
+	
+	var is_valid = target != null and battle_scene.ability_manager.is_valid_target(target_selection_card.card_data, target)
+	
+	if not is_valid:
+		if target_selection_card.card_data["type"] == "minion":
+			target = null # 미니언은 잘못된 대상이나 빈 공간 클릭 시 능력 증발 후 소환만 진행
+		else:
+			_cancel_target_selection("유효한 대상을 지정해야 합니다.")
+			return
+		
+	if not _try_consume_mana_and_drop(target_selection_card):
+		_cancel_target_selection("마나 부족")
+		return
+		
+	var card = target_selection_card
+	var info = pending_drop_info
+	
+	attack_line.visible = false
+	battle_scene.set_target_highlights(card, false)
+	set_state(InputState.IDLE)
+	
+	target_selection_card = null
+	pending_drop_info = {}
+	
+	card.remove_placeholder()
+	card.z_index = 0
+	
+	if card.card_data["type"] == "minion":
+		battle_scene.summon_to_slot(card, info["slot_index"], battle_scene.player, target)
+	elif card.card_data["type"] == "magic":
+		battle_scene.cast_magic(card, battle_scene.player, target)
+
+func _cancel_target_selection(reason: String = "타겟 지정 취소됨"):
+	attack_line.visible = false
+	if is_instance_valid(target_selection_card):
+		battle_scene.set_target_highlights(target_selection_card, false)
+		var card = target_selection_card
+		target_selection_card = null
+		pending_drop_info = {}
+		set_state(InputState.IDLE)
+		return_to_hand(card, reason)
 
 func _try_consume_mana_and_drop(card: Area2D) -> bool:
 	if battle_scene.player.use_mana(card.card_data["cost"]) == false:
@@ -174,10 +340,22 @@ func start_attack_line(attacker):
 func update_attack_line(start_pos):
 	var what_is_under = get_target_under_mouse()
 	
-	var target = _get_enemy_target_from_info(what_is_under)
+	var target = null
+	if current_state == InputState.SELECTING_TARGET:
+		if what_is_under["has_minion"]: target = what_is_under["minion"]
+		elif what_is_under["has_master"]: target = what_is_under["master"]
+		
+		# 유효한 타겟이 아니면 쫀득하게 스냅하지 않음 (시각적 필터링)
+		if target != null and not battle_scene.ability_manager.is_valid_target(target_selection_card.card_data, target):
+			target = null
+	else:
+		target = _get_enemy_target_from_info(what_is_under)
+		if target and not battle_scene._is_targetable(dragging_card, target):
+			target = null
+			
 	var desired_target_pos = battle_scene.get_global_mouse_position()
 		
-	if target and battle_scene._is_targetable(dragging_card, target):
+	if target:
 		desired_target_pos = target.global_position if target is Area2D else target.avatar.global_position
 
 	# 끝점이 즉시 이동하지 않고 매 프레임 목표 지점(마우스 or 타겟 중앙)을 향해 부드럽게 쫓아가도록 보간(Lerp) 적용
@@ -208,6 +386,7 @@ func end_attack_line(attacker):
 		battle_scene.attack_with_minion(attacker, target)
 	else:
 		print("Attack Cancel: 공격 대상이 없음")
+		attacker.z_index = 0
 
 func _get_enemy_target_from_info(what_is_under: Dictionary):
 	if what_is_under["has_minion"] and what_is_under["minion_side"] == "enemy":
@@ -279,3 +458,36 @@ func get_target_under_mouse() -> Dictionary:
 			info["magic_slot"] = target
 
 	return info
+
+func _get_card_under_mouse() -> Area2D:
+	var space_state = battle_scene.get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = battle_scene.get_global_mouse_position()
+	query.collide_with_areas = true
+	query.collide_with_bodies = false
+	
+	var results = space_state.intersect_point(query)
+	var top_card = null
+	var max_z = -999
+	for r in results:
+		var collider = r.collider
+		if "card_data" in collider: # 해당 오브젝트가 '카드'인지 검사
+			# 덱 더미 제외 (클릭이 막혀있는 카드)
+			if collider.get("input_pickable") == false:
+				continue
+			# 상대방 손패 제외
+			if collider.get("master") == battle_scene.enemy and collider.get("current_state") == collider.State.IN_HAND:
+				continue
+				
+			var z = collider.z_index if "z_index" in collider else 0
+			if z > max_z:
+				top_card = collider
+				max_z = z
+	return top_card
+
+func reset_state():
+	if is_instance_valid(dragging_card):
+		handle_right_click(dragging_card) # 진행 중인 드래그가 있다면 우클릭 취소 로직을 재활용해 취소
+	
+	possible_click_card = null # 클릭하려던 카드 정보도 확실하게 초기화
+	set_state(InputState.IDLE)
