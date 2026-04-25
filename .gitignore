@@ -1,0 +1,10 @@
+# Godot-specific ignores
+.godot
+android
+build
+derivatives
+export_presets.cfg
+
+# OS-specific ignores
+.DS_Store
+Thumbs.db

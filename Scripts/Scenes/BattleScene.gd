@@ -379,6 +379,8 @@ func attack_with_minion(attacker, target):
 		else:				 # 미니언 공격
 			ability_manager.trigger_ability("onHit", target) # 공격 후 발동 능력 체크
 			target.card_data["hp"] -= attacker.card_data["atk"]
+			attacker.card_data["hp"] -= target.card_data["atk"] # 반격 데미지
+			
 			attacker.update_display()
 			target.update_display()
 	)
@@ -392,7 +394,8 @@ func attack_with_minion(attacker, target):
 	# 정리 (살아있을 때만)
 	if is_instance_valid(attacker):
 		attacker.z_index = 0
-	
+		
+	_check_minion_death(attacker)
 	_check_minion_death(target)
 	set_input_lock(false) # 공격 애니메이션 완료 후 입력 잠금 해제
 
