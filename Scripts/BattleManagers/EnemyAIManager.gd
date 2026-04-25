@@ -6,8 +6,36 @@ func start_enemy_turn():
 	print("Enemy AI: 턴 시작")
 	
 	battle_scene.dialogue_manager.start_dialogue([
-		{"image": "res://Images/enemy.jpg", "text": "내 차례다!"}
+		{"image": "res://Images/enemy.jpg", "text": "후훗, 오빠. 나랑 재밌는 거 할래?"},
+		{
+			"image": "res://Images/enemy.jpg", 
+			"text": "시간이 없어! 빨리 결정해!",
+			"time_limit": 10.0, 
+			"timeout_index": 0, # 시간이 다 되면 강제로 선택될 옵션 인덱스
+			"charm_lock_index": [1], # 매혹 시 잠글 옵션 인덱스 (1번: 거절한다)
+			"options": [
+				{
+					"text": "(유혹에 넘어간다)", 
+					"effect": { "ID": "DAMAGE", "target": "my_master", "amount": 5 },
+					# ✅ 유혹에 넘어갔을 때 이어질 전용 스토리!
+					"next_dialogue": [
+						{"image": "res://Images/enemy.jpg", "text": "착한 아이네. 상으로 기분좋게 해줄게!"},
+						{"image": "res://Images/enemy.jpg", "text": "어때 좋지?"}
+					]
+				},
+				{
+					"text": "(거절한다)", 
+					# ✅ 거절했을 때 이어질 전용 스토리!
+					"next_dialogue": [
+						{"image": "res://Images/enemy.jpg", "text": "쳇, 시시하긴. 후회하게 될 거야!"}
+					]
+				}
+			]
+		}
+		# 주의: next_dialogue로 분기해버리면, 이 배열 뒤에 있던 기존 대사들은 무시됩니다!
 	])
+	
+
 	await battle_scene.dialogue_manager.dialogue_finished
 
 	await get_tree().create_timer(1.0).timeout # 턴 시작 딜레이
@@ -59,10 +87,12 @@ func _try_use_card() -> bool:
 		for i in range(battle_scene.enemy.slot.size()): # 하드코딩(3) 제거, 슬롯 개수 확장에 자동 대응
 			if battle_scene.enemy.slot[i] == null:
 				battle_scene.enemy.use_mana(card_to_use.card_data["cost"]) # 마나 차감
+				battle_scene.show_description(card_to_use)
 				await battle_scene.summon_to_slot(card_to_use, i, battle_scene.enemy, target)
 				return true
 	elif card_to_use.card_data["type"] == "magic":
 		battle_scene.enemy.use_mana(card_to_use.card_data["cost"]) # 마나 차감
+		battle_scene.show_description(card_to_use)
 		await battle_scene.cast_magic(card_to_use, battle_scene.enemy, target)
 		return true
 	# 빈 슬롯 찾기
@@ -84,20 +114,17 @@ func _try_attack_one_time() -> bool:
 	return true
 
 func _choose_attack_target(_attacker):
-	# 1. 후보군 생성 (미니언 + 마스터)
-	var targets: Array = battle_scene.player.slot.filter(func(c): return is_instance_valid(c))
-	targets.append(battle_scene.player)
-
-	# 2. 타겟 우선순위(도발 등) 판정 필터링 
-	var valid_targets = targets.filter(func(t): 
-		return battle_scene._is_targetable(_attacker, t)
-	)
+	# 1. 타겟 우선순위(도발 등) 판정 필터링 (배열 섞임 방지를 위해 완벽 분리!)
+	var valid_minions: Array = []
+	for c in battle_scene.player.slot:
+		if is_instance_valid(c) and battle_scene._is_targetable(_attacker, c):
+			valid_minions.append(c)
+			
+	var can_hit_master = battle_scene._is_targetable(_attacker, battle_scene.player)
 	
-	if valid_targets.is_empty():
+	if valid_minions.is_empty() and not can_hit_master:
 		return null
-		
-	var valid_minions = valid_targets.filter(func(t): return t != battle_scene.player)
-	var can_hit_master = valid_targets.has(battle_scene.player)
+	
 	var dmg = _attacker.card_data.get("atk", 0)
 	
 	# 3. 킬각 확인: 명치(마스터)를 때려서 게임을 끝낼 수 있다면 무조건 명치 타겟팅!

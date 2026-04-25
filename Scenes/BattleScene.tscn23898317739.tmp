@@ -202,16 +202,16 @@ offset_bottom = 1080.0
 visible = false
 
 [node name="PlayerStatusContainer" type="HBoxContainer" parent="UI" unique_id=1495901757]
-offset_left = 1624.0
+offset_left = 1632.0
 offset_top = 744.0
-offset_right = 1624.0
-offset_bottom = 774.0
+offset_right = 1672.0
+offset_bottom = 784.0
 
 [node name="EnemyStatusContainer" type="HBoxContainer" parent="UI" unique_id=65211940]
 offset_left = 1616.0
 offset_top = 312.0
 offset_right = 1616.0
-offset_bottom = 342.0
+offset_bottom = 352.0
 
 [node name="InputBlocker" type="Control" parent="." unique_id=2107461306]
 visible = false

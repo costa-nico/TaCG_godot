@@ -9,6 +9,7 @@ const CARD_SCENE = preload("res://scenes/Card.tscn")
 @onready var input_manager = $Managers/InputManager
 
 @onready var dialogue_manager = $UI/DialogueManager
+@onready var game_over_ui = $UI/GameOverUI # 씬 트리에 추가한 GameOverUI 노드 경로
 @onready var description_manager = $UI/DescriptionManager # !!! 실제로 만드신 디스크립션 씬 노드 경로로 맞춰주세요 !!!
 
 @onready var attack_line = $UI/AttackLine
@@ -23,6 +24,9 @@ const CARD_SCENE = preload("res://scenes/Card.tscn")
 
 @onready var player_deck_node = $PlayerDeck # 실제 씬의 플레이어 덱 노드 경로에 맞게 수정해 주세요!
 @onready var enemy_deck_node = $EnemyDeck   # 실제 씬의 적 덱 노드 경로에 맞게 수정해 주세요!
+
+@onready var player_status_container = $UI/PlayerStatusContainer # 에디터에서 만든 노드 연결
+@onready var enemy_status_container = $UI/EnemyStatusContainer
 
 const PLAYER_HAND_CENTER_POS = Vector2(576, 600)
 const ENEMY_HAND_CENTER_POS = Vector2(576, 200)
@@ -40,7 +44,7 @@ class Master:
 
 	var avatar: Node
 
-	var hp:int = 20
+	var hp:int = 5
 	var max_mana:int = 0
 	var mana:int = 0
 
@@ -49,6 +53,7 @@ class Master:
 	var hand: Array[Area2D] = []
 	var slot: Array[Area2D] = [null, null, null]
 	var deck: Array = []
+	var status_effects: Dictionary = {} # 본체용 상태이상 스택 저장소 추가!!
 
 	func grow_mana():
 		if max_mana < 5:
@@ -102,6 +107,9 @@ func _ready():
 	attack_line.width_curve = width_curve
 
 	refill_deck(player)
+	if game_over_ui:
+		game_over_ui.play_again_pressed.connect(func(): get_tree().reload_current_scene())
+
 	refill_deck(enemy)
 
 	_create_deck_visuals() # 화면에 더미 덱 시각화
@@ -257,13 +265,15 @@ func cast_magic(card: Area2D, master_: Master, target = null):
 	tween.chain()\
 		.tween_property(card, "scale", Vector2(0, 0), 0.1)\
 		.set_ease(Tween.EASE_IN_OUT)
-	tween.tween_callback(func():
-		ability_manager.trigger_ability("onUse", card, target) # 타겟과 함께 사용 시 발동
-		card.z_index = 0
-		card.queue_free()
-	)
 	
 	await tween.finished
+
+	# === 인터럽트(Interrupt) 파이프라인 ===
+	var final_target = await ability_manager.process_interrupts(card, master_, target, "onUse")
+	ability_manager.trigger_ability("onUse", card, final_target) # 타겟과 함께 사용 시 발동
+	
+	card.z_index = 0
+	card.queue_free()
 
 	reposition_hand(master_)
 	print("마법 시전: %s가 %s 사용" % [master_.name, card.card_data["name"]])
@@ -297,7 +307,11 @@ func summon_to_slot(card: Area2D, slot_index: int, master_ : Master, target = nu
 	card.global_position = slot_node.global_position # 플레이어 드롭 보정 및 적 트윈 완료 후 완벽한 슬롯 정중앙 스냅
 	await card.set_on_board(slot_index)
 	card.z_index = 0
-	ability_manager.trigger_ability("onUse", card, target) # 타겟과 함께 사용 시 발동 능력 체크
+	
+	# === 인터럽트(Interrupt) 파이프라인 ===
+	var final_target = await ability_manager.process_interrupts(card, master_, target, "onUse")
+	ability_manager.trigger_ability("onUse", card, final_target) # 타겟과 함께 사용 시 발동 능력 체크
+	
 	reposition_hand(master_)
 	print("hand to bf: %s의 슬롯%d에 %s 소환" % [master_.name, slot_index, card.card_data["name"]])
 
@@ -305,9 +319,13 @@ func change_turn():
 	for card in current_master.slot:
 		if is_instance_valid(card):
 			ability_manager.trigger_ability("onTurnEnd", card) #이전 턴 마스터 턴 미니언 종료 능력 활성
+			if not is_instance_valid(card) or card.is_queued_for_deletion(): continue # 능력 발동 중 죽었으면 이후 로직 패스
 			card.attackable = 0 # 턴이 끝나면 공격 횟수 초기화
 			card.update_display()
+			ability_manager.process_status_effects(card, "onTurnEnd")
 	
+	ability_manager.process_status_effects(current_master, "onTurnEnd") # 본체 상태이상
+
 	current_master = enemy if current_master == player else player 
 
 	print("턴이 변경. 현재 턴:%s" % (current_master.name))
@@ -322,7 +340,12 @@ func change_turn():
 		if is_instance_valid(card):
 			card.attackable = 1 # 소환된 카드들은 다음 턴부터 공격 가능하게 설정
 			ability_manager.trigger_ability("onTurnStart", card) # 플레이어 전장 카드의 턴 시작 시 발동 능력 체크
+			if not is_instance_valid(card) or card.is_queued_for_deletion(): continue
+			ability_manager.process_status_effects(card, "onTurnStart")
+			if not is_instance_valid(card) or card.is_queued_for_deletion(): continue
 			card.update_display() # 공격 가능 여부에 따라 카드 색상 업데이트
+			
+	ability_manager.process_status_effects(current_master, "onTurnStart")
 	ui_manager.update()
 
 	if(current_master == enemy):
@@ -405,17 +428,11 @@ func _check_master_death(master: Master):
 
 func game_over(loser: Master):
 	set_input_lock(true) # 조작 완전 잠금
-	var winner = "플레이어" if loser == enemy else "적 AI"
-	print("\n==================================")
-	print("!!! 게임 종료 !!!")
-	print("승리자: %s" % winner)
-	print("==================================\n")
-	
-	# TODO: 여기에 화려한 승리/패배 UI를 띄우는 코드를 추가하세요!
-	if loser == enemy:
-		dialogue_manager.start_dialogue([{"image": "res://Images/enemy.jpg", "text": "크윽... 내가 지다니..."}])
+	var is_player_victory = (loser == enemy)
+	if game_over_ui:
+		game_over_ui.show_result(is_player_victory)
 	else:
-		dialogue_manager.start_dialogue([{"image": "res://Images/enemy.jpg", "text": "하하하! 나의 승리다!"}])
+		print("게임 오버! 승리 여부: ", is_player_victory)
 
 func _check_minion_death(target):
 	if is_instance_valid(target) and target is not Master and target.card_data["hp"] <= 0:
@@ -457,26 +474,44 @@ func _is_targetable(_attacker, target) -> bool:
 	# 도발이 없을 때: 본체(Master)와 모든 하수인 타겟팅 가능
 	return true
 
-func set_target_highlights(attacker: Area2D, is_on: bool):
-	var target_owner = enemy if attacker.master == player else player
+func set_target_highlights(card: Area2D, is_on: bool):
+	# 일단 양쪽 모든 필드와 마스터의 하이라이트 초기화
+	for c in player.slot:
+		if is_instance_valid(c): c.set_target_highlight(false)
+	for c in enemy.slot:
+		if is_instance_valid(c): c.set_target_highlight(false)
+	player.avatar.modulate = Color.WHITE
+	enemy.avatar.modulate = Color.WHITE
 	
-	# 일단 모든 적의 하이라이트 초기화
-	for card in target_owner.slot:
-		if is_instance_valid(card):
-			card.set_target_highlight(false)
-	target_owner.avatar.modulate = Color.WHITE # 마스터 아바타 초기화
-	
-	if is_on:
+	if not is_on:
+		return
+		
+	# 1. 하수인의 일반 공격인 경우 (도발 룰 적용)
+	if card.current_state == card.State.DRAGGING_TO_ATTACK or card.current_state == card.State.ON_BOARD:
+		var target_owner = enemy if card.master == player else player
 		var has_taunt = target_owner.slot.any(func(c): return is_instance_valid(c) and _has_taunt(c))
 		
-		for card in target_owner.slot:
-			if is_instance_valid(card):
-				if has_taunt and not _has_taunt(card):
-					continue # 도발이 있는데 자신은 도발 하수인이 아니면 하이라이트 패스
-				card.set_target_highlight(true)
+		for c in target_owner.slot:
+			if is_instance_valid(c):
+				if has_taunt and not _has_taunt(c): continue # 도발이 있는데 자신은 도발 하수인이 아니면 패스
+				c.set_target_highlight(true)
 				
 		if not has_taunt:
 			target_owner.avatar.modulate = Color(1.0, 0.2, 0.2, 1.0)
+			
+	# 2. 마법 카드이거나 하수인의 전투의 함성(타겟 지정)인 경우 (능력 유효 대상 하이라이트)
+	else:
+		for c in player.slot:
+			if is_instance_valid(c) and ability_manager.is_valid_target(card.card_data, c):
+				c.set_target_highlight(true)
+		for c in enemy.slot:
+			if is_instance_valid(c) and ability_manager.is_valid_target(card.card_data, c):
+				c.set_target_highlight(true)
+				
+		if ability_manager.is_valid_target(card.card_data, player):
+			player.avatar.modulate = Color(0.5, 1.0, 0.5, 1.0) # 아군은 초록색
+		if ability_manager.is_valid_target(card.card_data, enemy):
+			enemy.avatar.modulate = Color(1.0, 0.2, 0.2, 1.0) # 적은 빨간색
 
 func show_description(card: Area2D):
 	if description_manager:
@@ -484,3 +519,22 @@ func show_description(card: Area2D):
 			description_manager.show_card(card.card_data, card.global_position) # 카드 데이터와 '원본 카드 위치'를 함께 넘겨줌
 		else:
 			description_manager.show()
+
+func hide_description():
+	if description_manager and description_manager.has_method("hide_card"):
+		description_manager.hide_card()
+
+func update_master_statuses():
+	_update_single_master_status(player, player_status_container)
+	_update_single_master_status(enemy, enemy_status_container)
+	
+func _update_single_master_status(master_obj: Master, container: Node):
+	if not container: return
+	for child in container.get_children():
+		child.queue_free()
+	var STATUS_ICON = preload("res://scenes/StatusIcon.tscn") # 실제 경로에 맞게 수정하세요!
+	for status_id in master_obj.status_effects:
+		var amount = master_obj.status_effects[status_id]
+		var icon = STATUS_ICON.instantiate()
+		container.add_child(icon)
+		icon.setup(status_id, amount, Vector2(45, 45)) # UI (본체) 옆에 띄울 아이콘의 큼직한 크기 설정!

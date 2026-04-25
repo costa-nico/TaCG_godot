@@ -121,6 +121,9 @@ func start_drag(card):
 	battle_scene.update_hover(null) # 드래그 시작 시 호버 상태 강제 해제
 	card.z_index = 100
 	
+	if battle_scene.has_method("show_description"):
+		battle_scene.show_description(card)
+		
 	var tween = card.get_card_tween()
 	tween.tween_property(card, "rotation_degrees", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 
@@ -149,6 +152,8 @@ func end_drag(card):
 			
 	if current_state != InputState.SELECTING_TARGET:
 		set_state(InputState.IDLE)
+		
+	if battle_scene.has_method("hide_description"): battle_scene.hide_description()
 
 func _handle_hover():
 	var space_state = battle_scene.get_world_2d().direct_space_state
@@ -219,6 +224,8 @@ func handle_right_click(card):
 		dragging_card = null
 		return_to_hand(card, "우클릭으로 손패로 돌아감")
 		
+	if battle_scene.has_method("hide_description"): battle_scene.hide_description()
+		
 	set_state(InputState.IDLE)
 		
 
@@ -278,6 +285,7 @@ func _confirm_target_selection():
 	
 	if what_is_under["has_minion"]: target = what_is_under["minion"]
 	elif what_is_under["has_master"]: target = what_is_under["master"]
+	elif what_is_under["has_slot"] and what_is_under["is_slot_empty"]: target = what_is_under["slot"]
 	
 	var is_valid = target != null and battle_scene.ability_manager.is_valid_target(target_selection_card.card_data, target)
 	
@@ -344,6 +352,7 @@ func update_attack_line(start_pos):
 	if current_state == InputState.SELECTING_TARGET:
 		if what_is_under["has_minion"]: target = what_is_under["minion"]
 		elif what_is_under["has_master"]: target = what_is_under["master"]
+		elif what_is_under["has_slot"] and what_is_under["is_slot_empty"]: target = what_is_under["slot"]
 		
 		# 유효한 타겟이 아니면 쫀득하게 스냅하지 않음 (시각적 필터링)
 		if target != null and not battle_scene.ability_manager.is_valid_target(target_selection_card.card_data, target):
@@ -356,7 +365,7 @@ func update_attack_line(start_pos):
 	var desired_target_pos = battle_scene.get_global_mouse_position()
 		
 	if target:
-		desired_target_pos = target.global_position if target is Area2D else target.avatar.global_position
+		desired_target_pos = target.global_position if "global_position" in target else target.avatar.global_position
 
 	# 끝점이 즉시 이동하지 않고 매 프레임 목표 지점(마우스 or 타겟 중앙)을 향해 부드럽게 쫓아가도록 보간(Lerp) 적용
 	var weight = clamp(30.0 * get_process_delta_time(), 0.0, 1.0)

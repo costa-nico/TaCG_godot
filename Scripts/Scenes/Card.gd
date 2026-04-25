@@ -4,7 +4,7 @@ extends Area2D
 const SCALE_HAND = Vector2(0.4, 0.4)   # 손패에서는 작게
 const SCALE_DRAG = Vector2(0.6, 0.6)   # 
 const SCALE_BOARD = Vector2(0.45, 0.45)  # 전장에선 원래대로
-const SCALE_DESC = Vector2(1, 1)   # 설명 창에서의 크기
+const SCALE_DESC = Vector2(0.8, 0.8)   # 설명 창에서의 크기
 
 const COLOR_ATTACKABLE = Color(0, 0.5, 0, 0.5) # 아군 공격 가능 (초록색 오라)
 const COLOR_TARGETABLE = Color(1.0, 0, 0, 0.5) # 타겟으로 지정됨 (빨간색 오라)
@@ -43,13 +43,12 @@ var card_tween: Tween
 var aura_tween: Tween # 오라 애니메이션 전용 트윈
 var _current_aura_color: Color = Color.TRANSPARENT # 오라 중복 실행 방지용
 
+var status_effects: Dictionary = {} # 상태이상 스택 저장용 딕셔너리
+
 func _ready():
 	scale = SCALE_HAND
 	
 	input_pickable = true
-	input_event.connect(_on_area_2d_input_event)
-	mouse_entered.connect(_on_mouse_entered)
-	mouse_exited.connect(_on_mouse_exited)
 	aura.visible = false
 
 func init_card(data: Dictionary, master_: Object):
@@ -70,28 +69,11 @@ func init_card(data: Dictionary, master_: Object):
 	if self.master == battle_scene.enemy:
 		cover.visible = true
 
-func _on_mouse_entered():
-	if current_state == State.IN_HAND and master == battle_scene.player:
-		battle_scene.update_hover(self)
-
-func _on_mouse_exited():
-	if battle_scene.hovered_card == self:
-		battle_scene.update_hover(null)
-
-func _on_area_2d_input_event(_viewport, event, _shape_idx):
-	if battle_scene.current_master != battle_scene.player or master != battle_scene.player:
-		return
-		
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				# 드래그 감지 로직은 겹침 버그 방지를 위해 InputManager._input()의 물리 광선(RayCast) 시스템으로 이관되었습니다.
-				pass
-
 func update_display():
 	if card_data["type"] == "minion":
 		labels.atk.text = str(card_data["atk"])
 		labels.hp.text = str(card_data["hp"])
+		_update_status_icons()
 		_animate_aura(attackable > 0, COLOR_ATTACKABLE) # 트윈 애니메이션으로 오라 켜기/끄기
 
 func set_on_board(index: int):
@@ -181,3 +163,17 @@ func _animate_aura(is_on: bool, target_color: Color):
 		end_color.a = 0.0
 		aura_tween.tween_property(aura, "modulate", end_color, 0.5).set_trans(Tween.TRANS_SINE)
 		aura_tween.tween_callback(func(): aura.visible = false)
+
+func _update_status_icons():
+	if not has_node("StatusContainer"): return
+	var container = $StatusContainer
+	for child in container.get_children():
+		child.queue_free() # 기존 아이콘 싹 비우기
+		
+	if status_effects.is_empty(): return
+	var STATUS_ICON = preload("res://scenes/StatusIcon.tscn") # 실제 경로에 맞게 수정하세요!
+	for status_id in status_effects:
+		var amount = status_effects[status_id]
+		var icon = STATUS_ICON.instantiate()
+		container.add_child(icon)
+		icon.setup(status_id, amount, Vector2(50, 50)) # 카드에 부착될 아이콘의 크기 설정!

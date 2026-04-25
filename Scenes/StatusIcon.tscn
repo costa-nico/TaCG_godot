@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://cg5fg5gm6kuwi"]
+
+[ext_resource type="Texture2D" uid="uid://urkcnu2b7b51" path="res://Images/status/heart.png" id="1_r2ai7"]
+[ext_resource type="Script" uid="uid://dreyk5h403b1b" path="res://Scripts/Scenes/StatusIcon.gd" id="2_ykgth"]
+
+[node name="StatusIcon" type="TextureRect" unique_id=545185634]
+offset_right = 72.0
+offset_bottom = 72.0
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("1_r2ai7")
+expand_mode = 1
+stretch_mode = 5
+script = ExtResource("2_ykgth")
+
+[node name="CountLabel" type="Label" parent="." unique_id=313641066]
+layout_mode = 1
+offset_top = -11.428571
+offset_right = 17.0
+offset_bottom = 30.57143
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 30
+text = "1"
