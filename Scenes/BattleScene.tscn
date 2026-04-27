@@ -195,7 +195,6 @@ metadata/_edit_use_anchors_ = true
 
 [node name="DialogueManager" parent="UI" unique_id=1234567890 instance=ExtResource("5_dialogue")]
 visible = false
-offset_right = 1920.0
 offset_bottom = 1080.0
 
 [node name="DescriptionManager" parent="UI" unique_id=1873690942 instance=ExtResource("6_2tp6q")]

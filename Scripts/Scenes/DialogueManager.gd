@@ -5,7 +5,7 @@ var dialogue_data: Array = []
 var current_index: int = 0
 var is_waiting_for_choice: bool = false
 
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: TextureRect = $TextureRect # 텍스처렉트로 바꾸셨다면 노드 이름을 TextureRect로 맞춰주세요!
 @onready var text_label: Label = $Panel/MarginContainer/TextLabel
 
 @onready var option_container: VBoxContainer = $OptionContainer
@@ -21,6 +21,12 @@ func _ready():
 	if template_button: template_button.hide() 
 	if timer_node: timer_node.timeout.connect(_on_time_out)
 	
+	# 코드로 TextureRect 비율 유지 및 중앙 정렬 완벽하게 박아넣기!
+	if sprite:
+		sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # 노드 크기를 맘대로 조절 가능하게 허용
+		sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED # 비율을 무조건 유지하면서 중앙 정렬!
+		sprite.set_anchors_preset(Control.PRESET_FULL_RECT) # 화면(또는 부모)에 꽉 차게 앵커 고정
+		
 	hide()
 
 func start_dialogue(data: Array):
@@ -52,6 +58,12 @@ func _show_current_dialogue():
 			if sprite: sprite.texture = load(current["image"])
 		text_label.text = current.get("text", "")
 		
+		# 대사가 화면에 출력될 때 효과(Effect)가 있다면 즉시 발동!
+		if current.has("effect"):
+			var battle_scene = get_tree().current_scene
+			if battle_scene and battle_scene.ability_manager:
+				battle_scene.ability_manager._execute_effect(current["effect"], battle_scene.player, battle_scene.player)
+				
 		# 대사에 선택지가 포함되어 있다면 버튼 생성
 		if current.has("options"):
 			_setup_options(current)

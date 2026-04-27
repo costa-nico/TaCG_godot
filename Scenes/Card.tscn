@@ -43,15 +43,19 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -150.0
-offset_top = -185.0
+offset_top = -189.0
 offset_right = 150.0
-offset_bottom = 185.0
+offset_bottom = 181.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.6449482, 0.99999994, 0.9955531, 1)
 
-[node name="Texture" type="Sprite2D" parent="Illust" unique_id=1890261722]
+[node name="Texture" type="TextureRect" parent="Illust" unique_id=237639592]
+offset_left = -150.0
+offset_top = -189.0
+offset_right = 150.0
+offset_bottom = 181.0
 
 [node name="Background" type="Sprite2D" parent="." unique_id=574405956]
 texture = ExtResource("2_h8wm0")

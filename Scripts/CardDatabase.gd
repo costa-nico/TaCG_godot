@@ -46,7 +46,7 @@ var card_list = {
 		"description": "와!",
 		"abilities": {
 			"onUse": [
-				{ "ID": "ADD_MANA", "target": "my_master", "amount": 10 },
+				{ "ID": "ADD_MANA", "target": "my_master", "amount": 5 },
 				{ "ID": "DRAW_CARD", "target": "my_master", "amount": 2 },
 			]
 		},
@@ -140,31 +140,32 @@ var card_list = {
 		},
 		"category" : "special"
 	},
-	"SUCCUBUS" : {
+	"PINK_MAID" : {
 		"type": "minion",
-		"name": "서큐버스",
+		"name": "핑크 메이드",
 		"cost": 3,
 		"atk": 3,
 		"hp": 3,
-		"description": "남성을 착취하는 음란한 마물입니다.",
+		"description": "밤시중에 특화된 메이드입니다.",
+		"texture_path": "res://Images/cards/pink_maid.png",
 		"abilities": {
 			"onUse": [
 				{ "ID": "APPLY_STATUS", "target": "enemy_master", "status_id": "CHARM", "amount": 2 }
 			],
 			"passive": [
-				{ "ID": "INDUCE", "target": "self"}
+				{ "ID": "INDUCE", "target": "self", "dialogue_id": "INDUCE_PASSIVE" }
 			]
 		},
-		"category" : "special"
+		"category" : "lewd"
 	},
-	"GIFT_OF_SUCCUBUS": {
+	"SERVICE_START": {
 		"type": "magic",
-		"name": "위험한 초대",
+		"name": "봉사 개시",
 		"cost": 0,
 		"description": "미인계 테스트용 카드입니다.",
 		"abilities": {
 			"onUse": [
-				{ "ID": "SUMMON", "target": "enemy_empty_slot", "card_id": "SUCCUBUS" }
+				{ "ID": "SUMMON", "target": "enemy_empty_slot", "card_id": "PINK_MAID" }
 			]
 		},
 		"category" : "special"
@@ -202,3 +203,81 @@ func get_status_data(id: String) -> Dictionary:
 	if status_list.has(id):
 		return status_list[id]
 	return {}
+
+# ==========================================
+# 다이얼로그(대화) 데이터베이스
+# ==========================================
+var dialogue_list = {
+	"ENEMY_TURN_START": [
+		# === 패턴 1 ===
+		[
+			{"image": "res://Images/enemy.jpg", "text": "후훗, 오빠. 나랑 재밌는 거 할래?"},
+			{
+				"image": "res://Images/enemy.jpg", 
+				"text": "시간이 없어! 빨리 결정해!",
+				"time_limit": 10.0, 
+				"timeout_index": 0,
+				"charm_lock_index": [1],
+				"options": [
+					{
+						"text": "(유혹에 넘어간다)", 
+						"effect": { "ID": "DAMAGE", "target": "my_master", "amount": 5 },
+						"next_dialogue": [
+							{"image": "res://Images/enemy.jpg", "text": "착한 아이네. 상으로 기분좋게 해줄게!"},
+							{"image": "res://Images/enemy.jpg", "text": "어때 좋지?"}
+						]
+					},
+					{
+						"text": "(거절한다)", 
+						"next_dialogue": [
+							{"image": "res://Images/enemy.jpg", "text": "쳇, 시시하긴. 후회하게 될 거야!"}
+						]
+					}
+				]
+			}
+		],
+	],
+	"INDUCE_PASSIVE": [
+		[
+			{
+				"image": "res://Images/cg/pink_maid_stand.png", 
+				"text": "저기, 그 효과 저한테 주시겠어요? \n만약 저한테 주신다면 '봉사' 해드리겠습니다❤️",
+				# "time_limit": 10.0,
+				"timeout_index": 0,
+				"charm_lock_index": [1], 
+				"options": [
+					{
+						"text": "(유혹에 넘어간다) 효과 대상을 변경", 
+						"override_target": true,
+						"next_dialogue": [
+							{"image": "res://Images/cg/pink_maid_stand.png", "text": "감사합니다 주인님❤️. 잘 받을게요❤️"},
+							{	"image": "res://Images/cg/pink_maid_handjob_0.png", 
+								"text": "자 그러면 보답으로❤️.\n최고로 기분 좋은 봉사❤️ 시작하겠습니다❤️",
+								"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 1 }},
+							{"image": "res://Images/cg/pink_maid_handjob_1.png", "text": "다음에도 잘 부탁드립니다. 주인님❤️",
+								"effect": { "ID": "DAMAGE", "target": "my_master", "amount": 1 }},
+						]
+					},
+					{
+						"text": "(단호하게 거절한다) 원래 대상에게 사용", 
+						"override_target": false,
+						"next_dialogue": [
+							{"image": "res://Images/cg/pink_maid_stand.png", "text": "칫, 쪼잔하긴."}
+						]
+					}
+				]
+			}
+		],
+	]
+}
+
+func get_dialogue(id: String) -> Array:
+	if dialogue_list.has(id):
+		var data = dialogue_list[id]
+		# 리스트의 첫 번째 요소가 또 '배열(Array)'이라면 (여러 패턴이 묶여 있다면)
+		if data.size() > 0 and typeof(data[0]) == TYPE_ARRAY:
+			# 배열 안의 시퀀스 중 하나를 무작위로 뽑아서 반환합니다!
+			return data.pick_random().duplicate(true)
+		else:
+			return data.duplicate(true)
+	return []

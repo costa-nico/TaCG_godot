@@ -17,6 +17,14 @@ func _ready():
 	var tooltip_theme = Theme.new()
 	tooltip_theme.set_font_size("font_size", "TooltipLabel", 30) 
 	desc_label.theme = tooltip_theme
+	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	desc_label.fit_content = true
+	desc_label.bbcode_enabled = true
+	desc_label.clip_contents = false # 박스 오른쪽 끝에 닿은 글자가 미세하게 깎이는(잘리는) 시각적 버그 완벽 차단!
+	
+	# 텍스트 박스가 좁아서 한국어가 강제로 잘리는 현상을 막기 위해
+	# 라벨의 최소 가로 너비를 450픽셀로 아주 넉넉하게 강제 고정해버립니다!
+	desc_label.custom_minimum_size = Vector2(450, 0)
 	
 	hide()
 
@@ -102,7 +110,7 @@ func _update_desc_text(data: Dictionary):
 			var kw_list = abilities["keyword"] if typeof(abilities["keyword"]) == TYPE_ARRAY else [abilities["keyword"]]
 			for kw in kw_list:
 				if typeof(kw) == TYPE_DICTIONARY and kw.get("ID") == "TAUNT":
-					text += "[color=#FFD700][도발][/color]\n"
+					text += "[color=#FFD700]%s[/color]\n" % _keep_together("[도발]")
 					tooltips["도발"] = "도발: 도발을 가진 하수인이 있다면, 다른 대상을 공격할 수 없습니다."
 					
 		# 2. 일반 트리거 처리
@@ -123,7 +131,8 @@ func _update_desc_text(data: Dictionary):
 					effect_strs.append(_parse_effect(eff, tooltips))
 					
 				if effect_strs.size() > 0:
-					text += prefix + ", ".join(effect_strs) + "\n"
+					# 문장들이 이미 '.'으로 끝나므로 쉼표 대신 띄어쓰기(공백)로 자연스럽게 연결합니다.
+					text += prefix + " ".join(effect_strs) + "\n"
 
 	text = text.strip_edges()
 	
@@ -137,6 +146,7 @@ func _update_desc_text(data: Dictionary):
 	elif text == "": # 능력도 없고 설명도 없을 때
 		text = "능력이 없습니다."
 		
+	# [lang=en] 꼼수는 오히려 BBCode([color]) 주변의 툴팁 키워드를 쪼개버리므로 원상복구합니다!
 	desc_label.text = text.strip_edges()
 	
 	# 수집된 툴팁들을 모아서 라벨의 툴팁으로 병합 설정
@@ -163,11 +173,11 @@ func _parse_effect(eff: Dictionary, tooltips: Dictionary) -> String:
 	var t_str = target_dict.get(eff.get("target", ""), "")
 	var t_prefix = t_str + " " if t_str != "" else ""
 	match eff.get("ID", ""):
-		"DAMAGE", "DAMAGE_ALL": return t_prefix + "피해를 %d 줍니다." % eff.get("amount", 0)
+		"DAMAGE", "DAMAGE_ALL": return t_prefix + "피해를 %d줍니다." % eff.get("amount", 0)
 		"BUFF", "BUFF_ALL": return t_prefix + "+%d/+%d 부여합니다." % [eff.get("atk", 0), eff.get("hp", 0)]
-		"ADD_MANA": return "마나를 %d 회복합니다." % eff.get("amount", 0)
+		"ADD_MANA": return "마나를 %d회복합니다." % eff.get("amount", 0)
 		"DRAW_CARD": return "카드를 %d장 뽑습니다." % eff.get("amount", 0)
-		"ADD_HP": return t_prefix + "체력을 %d 회복합니다." % eff.get("amount", 0)
+		"ADD_HP": return t_prefix + "체력을 %d회복합니다." % eff.get("amount", 0)
 		"DOUBLE_HP": return t_prefix + "체력을 2배로 만듭니다."
 		"APPLY_STATUS": 
 			var status_id = eff.get("status_id", "")
@@ -177,12 +187,21 @@ func _parse_effect(eff: Dictionary, tooltips: Dictionary) -> String:
 			if not s_data.is_empty():
 				tooltips[s_name] = "%s: %s" % [s_name, s_data.get("description", "")]
 				
-			return t_prefix + "[color=#00FFFF][%s][/color]을(를) %d스택 부여합니다." % [s_name, eff.get("amount", 0)]
+			return t_prefix + "[color=#00FFFF]%s[/color]을(를) %d스택 부여합니다." % [_keep_together("[" + s_name + "]"), eff.get("amount", 0)]
 		"SUMMON":
 			var c_data = CardDatabase.get_card_by_id(eff.get("card_id", ""))
 			var c_name = c_data.get("name", "하수인")
-			return t_prefix + "[color=#FFD700]%s[/color]을(를) 소환합니다." % c_name
+			return t_prefix + "[color=#FFD700]%s[/color]을(를) 소환합니다." % _keep_together(c_name)
 		"INDUCE":
 			tooltips["유도"] = "유도: 상대가 이로운 효과(버프)를 사용할 때, 그 효과를 가로채는 유혹을 시도합니다."
-			return "[color=#FF69B4][유도][/color] 능력을 지닙니다."
+			return "[color=#FF69B4]%s[/color] 능력을 지닙니다." % _keep_together("[유도]")
 	return "알 수 없는 효과"
+
+# 한국어 단어 중간 잘림을 완벽하게 방지하기 위해, 글자 사이에 '단어 결합자(Word Joiner)' 투명 문자를 삽입하는 강력한 헬퍼 함수!
+func _keep_together(text: String) -> String:
+	var result = ""
+	for i in range(text.length()):
+		result += text[i]
+		if i < text.length() - 1:
+			result += "\u2060" # U+2060: 어떤 경우에도 줄바꿈을 허용하지 않는 투명 특수문자
+	return result

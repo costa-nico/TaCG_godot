@@ -5,38 +5,10 @@ extends Node
 func start_enemy_turn():
 	print("Enemy AI: 턴 시작")
 	
-	battle_scene.dialogue_manager.start_dialogue([
-		{"image": "res://Images/enemy.jpg", "text": "후훗, 오빠. 나랑 재밌는 거 할래?"},
-		{
-			"image": "res://Images/enemy.jpg", 
-			"text": "시간이 없어! 빨리 결정해!",
-			"time_limit": 10.0, 
-			"timeout_index": 0, # 시간이 다 되면 강제로 선택될 옵션 인덱스
-			"charm_lock_index": [1], # 매혹 시 잠글 옵션 인덱스 (1번: 거절한다)
-			"options": [
-				{
-					"text": "(유혹에 넘어간다)", 
-					"effect": { "ID": "DAMAGE", "target": "my_master", "amount": 5 },
-					# ✅ 유혹에 넘어갔을 때 이어질 전용 스토리!
-					"next_dialogue": [
-						{"image": "res://Images/enemy.jpg", "text": "착한 아이네. 상으로 기분좋게 해줄게!"},
-						{"image": "res://Images/enemy.jpg", "text": "어때 좋지?"}
-					]
-				},
-				{
-					"text": "(거절한다)", 
-					# ✅ 거절했을 때 이어질 전용 스토리!
-					"next_dialogue": [
-						{"image": "res://Images/enemy.jpg", "text": "쳇, 시시하긴. 후회하게 될 거야!"}
-					]
-				}
-			]
-		}
-		# 주의: next_dialogue로 분기해버리면, 이 배열 뒤에 있던 기존 대사들은 무시됩니다!
-	])
-	
-
-	await battle_scene.dialogue_manager.dialogue_finished
+	var dialog_data = CardDatabase.get_dialogue("ENEMY_TURN_START")
+	if not dialog_data.is_empty():
+		battle_scene.dialogue_manager.start_dialogue(dialog_data)
+		await battle_scene.dialogue_manager.dialogue_finished
 
 	await get_tree().create_timer(1.0).timeout # 턴 시작 딜레이
 	var safety_counter = 0

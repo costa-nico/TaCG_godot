@@ -3,7 +3,7 @@ extends Node
 # 플레이어 덱 정보: 카드ID(또는 이름): 장 수
 var player_deck: Dictionary = {
 	"GIVE_UP": 1, # 테스트용 카드, 실제 게임에서는 제거 예정
-	"GIFT_OF_SUCCUBUS": 1,
+	"SERVICE_START": 1,
 	"ENHANCER": 1,
 	"IRON_KNIGHT": 1,
 	"COIN_POCKET": 5

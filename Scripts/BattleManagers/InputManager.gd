@@ -81,8 +81,11 @@ func _handle_idle_input(event: InputEvent) -> void:
 				drag_start_time = Time.get_ticks_msec()
 
 				if possible_click_card != null and possible_click_card.master == battle_scene.player and battle_scene.current_master == battle_scene.player:
-					start_drag(possible_click_card)
-					get_viewport().set_input_as_handled()
+					# 손패에 있거나, 전장에서 공격 가능한 하수인만 드래그 시작 (소환/마법 시전 애니메이션 인터럽트 완벽 방지)
+					var state = possible_click_card.current_state
+					if state == possible_click_card.State.IN_HAND or (state == possible_click_card.State.ON_BOARD and possible_click_card.attackable > 0):
+						start_drag(possible_click_card)
+						get_viewport().set_input_as_handled()
 			else:
 				var dist = battle_scene.get_global_mouse_position().distance_to(drag_start_pos)
 				var time_elapsed = Time.get_ticks_msec() - drag_start_time

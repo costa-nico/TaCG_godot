@@ -126,7 +126,7 @@ func _apply_effect_by_id(effect: Dictionary, target):
 			if "mana" in target: 
 				target.hp -= amount
 				battle_scene.ui_manager.update()
-				battle_scene._check__masterdeath(target) # 마법으로 명치 맞았을 때 체크!
+				battle_scene._check_master_death(target) # 마법으로 명치 맞았을 때 체크!
 			else: # 하수인인 경우
 				target.card_data["hp"] -= amount
 				target.update_display()
@@ -141,7 +141,7 @@ func _apply_effect_by_id(effect: Dictionary, target):
 			if status_id != "":
 				target.status_effects[status_id] = target.status_effects.get(status_id, 0) + amount
 				if "mana" in target:
-					battle_scene.update__masterstatuses()
+					battle_scene.update_master_statuses()
 				else:
 					target.update_display()
 		"SUMMON":
@@ -260,7 +260,7 @@ func process_status_effects(target, timing: String):
 			has_changed = true
 			
 	if has_changed:
-		if "mana" in target: battle_scene.update__masterstatuses()
+		if "mana" in target: battle_scene.update_master_statuses()
 		else: target.update_display()
 
 # ==========================================
@@ -276,38 +276,15 @@ func process_interrupts(card: Area2D, _master, target, action_type: String = "on
 			for p in c.card_data["abilities"]["passive"]:
 				# action_type을 통해 마법(onUse), 공격(onAttack), 소환(onSummon) 등 다방면으로 인터럽트 가능!
 				if p.get("ID") == "INDUCE" and action_type == "onUse" and card.card_data.get("category", "") == "buff":
-					current_target = await _execute_induce(c, _master, current_target)
+					current_target = await _execute_induce(c, _master, current_target, p)
 					
 	return current_target
 
-func _execute_induce(inducer: Area2D, _master, target):
+func _execute_induce(inducer: Area2D, _master, target, ability_data: Dictionary):
 	print("INDUCE 패시브 발동! 미인계 다이얼로그 시작")
 	
-	var dialog_data = [
-		{
-			"image": "res://Images/enemy.jpg", 
-			"text": "어머, 그 좋은 걸 다른 애한테 주려고?\n나한테 주는 건 어때?",
-			"time_limit": 10.0,
-			"timeout_index": 0,
-			"charm_lock_index": [1], 
-			"options": [
-				{
-					"text": "(유혹에 넘어간다) 효과 대상을 서큐버스로 변경", 
-					"override_target": true,
-					"next_dialogue": [
-						{"image": "res://Images/enemy.jpg", "text": "고마워, 잘 받을게. 후훗."}
-					]
-				},
-				{
-					"text": "(단호하게 거절한다) 원래 대상에게 사용", 
-					"override_target": false,
-					"next_dialogue": [
-						{"image": "res://Images/enemy.jpg", "text": "칫, 쪼잔하긴."}
-					]
-				}
-			]
-		}
-	]
+	var dialog_id = ability_data.get("dialogue_id", "")
+	var dialog_data = CardDatabase.get_dialogue(dialog_id)
 	
 	# 선택 결과를 저장할 배열 (Godot 람다에서 외부 변수 캡처용)
 	var chosen_opt = [null]

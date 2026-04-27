@@ -50,6 +50,11 @@ func _ready():
 	
 	input_pickable = true
 	aura.visible = false
+	
+	# 카드의 일러스트(TextureRect)도 코드로 비율 고정 세팅!
+	if illustration is TextureRect:
+		illustration.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		illustration.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 
 func init_card(data: Dictionary, master_: Object):
 	card_data = data.duplicate(true)

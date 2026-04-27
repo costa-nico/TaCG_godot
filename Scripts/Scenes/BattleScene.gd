@@ -247,6 +247,7 @@ func reposition_hand(master_: Master):
 
 func cast_magic(card: Area2D, master_: Master, target = null):
 	card.cover.visible = false
+	card.input_pickable = false # 마법 시전 중 마우스 상호작용 완전 차단
 
 	card.z_index = 100
 	card.rotation_degrees = 0.0 # 시전 시 각도 즉시 정상화 (에너미 카드 누움 방지)
