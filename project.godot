@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="TaCG"
-run/main_scene="uid://cpscom4ltkyn5"
+run/main_scene="uid://cqd3e5y1pkd4k"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 CardDatabase="*uid://itig4ftxotpd"
 DeckLib="*uid://glaursqdv244"
 Calculator="*uid://cjrh38t2oexvn"
+EnemyDatabase="*uid://b78radn88l6q4"
 
 [display]
 

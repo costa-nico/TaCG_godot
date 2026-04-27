@@ -11,10 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://mvqhh4oc4emp" path="res://Scenes/DescriptionScene.tscn" id="6_2tp6q"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2tp6q"]
-size = Vector2(215.125, 216.625)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_ixjr5"]
-size = Vector2(239.125, 232.625)
+size = Vector2(215, 215)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_kwfy1"]
 size = Vector2(200, 300)
@@ -30,24 +27,30 @@ position = Vector2(960, 540)
 texture = ExtResource("2_8uoga")
 
 [node name="EnemyAvatar" type="Area2D" parent="." unique_id=123072701]
-position = Vector2(1712, 192)
+position = Vector2(1696, 176)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyAvatar" unique_id=2123586831]
-position = Vector2(-11.5625, -12.3125)
 shape = SubResource("RectangleShape2D_2tp6q")
 debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
 
-[node name="PlayerAvatar" type="Sprite2D" parent="EnemyAvatar" unique_id=126097242]
+[node name="TextureRect" type="TextureRect" parent="EnemyAvatar" unique_id=805934260]
+offset_left = -107.0
+offset_top = -107.0
+offset_right = 108.0
+offset_bottom = 108.0
 
 [node name="PlayerAvatar" type="Area2D" parent="." unique_id=30001336]
-position = Vector2(1752, 928)
+position = Vector2(1704, 918)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerAvatar" unique_id=2099592078]
-position = Vector2(-6.5625, 0.6875)
-shape = SubResource("RectangleShape2D_ixjr5")
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PlayerAvatar" unique_id=1095462865]
+shape = SubResource("RectangleShape2D_2tp6q")
 debug_color = Color(0.41135046, 0.4713642, 0, 0.41960785)
 
-[node name="PlayerAvatar" type="Sprite2D" parent="PlayerAvatar" unique_id=69917054]
+[node name="TextureRect" type="TextureRect" parent="PlayerAvatar" unique_id=1317591131]
+offset_left = -107.0
+offset_top = -107.0
+offset_right = 108.0
+offset_bottom = 108.0
 
 [node name="Slots" type="Node2D" parent="." unique_id=1821842232]
 position = Vector2(960, 539)

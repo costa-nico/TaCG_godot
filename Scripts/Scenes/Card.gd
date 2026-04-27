@@ -14,7 +14,7 @@ const CARD_SIZE = Vector2(200, 300)
 enum State { IN_HAND, DRAGGING_TO_USE, ON_BOARD, DRAGGING_TO_ATTACK, SNAPPED}
 var current_state: State = State.IN_HAND
 
-@onready var battle_scene = get_tree().current_scene
+@onready var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 @onready var input_manager = battle_scene.input_manager
 
 # 노드 참조

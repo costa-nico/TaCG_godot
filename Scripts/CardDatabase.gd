@@ -148,6 +148,7 @@ var card_list = {
 		"hp": 3,
 		"description": "밤시중에 특화된 메이드입니다.",
 		"texture_path": "res://Images/cards/pink_maid.png",
+		"beg_dialogue_id": "PINK_MAID_BEG", # 죽을 때 띄울 다이얼로그 ID!
 		"abilities": {
 			"onUse": [
 				{ "ID": "APPLY_STATUS", "target": "enemy_master", "status_id": "CHARM", "amount": 2 }
@@ -168,8 +169,27 @@ var card_list = {
 				{ "ID": "SUMMON", "target": "enemy_empty_slot", "card_id": "PINK_MAID" }
 			]
 		},
-		"category" : "special"
-	}
+		"category" : "summon"
+	},
+	"SISTER" : {
+		"type": "minion",
+		"name": "음란한 수녀",
+		"cost": 3,
+		"atk": 3,
+		"hp": 3,
+		"description": "밤시중에 특화된 메이드입니다.",
+		"texture_path": "res://Images/cards/pink_maid.png",
+		"beg_dialogue_id": "PINK_MAID_BEG", # 죽을 때 띄울 다이얼로그 ID!
+		"abilities": {
+			"onUse": [
+				{ "ID": "APPLY_STATUS", "target": "enemy_master", "status_id": "CHARM", "amount": 2 }
+			],
+			"passive": [
+				{ "ID": "INDUCE", "target": "self", "dialogue_id": "INDUCE_PASSIVE" }
+			]
+		},
+		"category" : "lewd"
+	},
 }
 
 # ID 기반 조회 함수
@@ -208,38 +228,10 @@ func get_status_data(id: String) -> Dictionary:
 # 다이얼로그(대화) 데이터베이스
 # ==========================================
 var dialogue_list = {
-	"ENEMY_TURN_START": [
-		# === 패턴 1 ===
-		[
-			{"image": "res://Images/enemy.jpg", "text": "후훗, 오빠. 나랑 재밌는 거 할래?"},
-			{
-				"image": "res://Images/enemy.jpg", 
-				"text": "시간이 없어! 빨리 결정해!",
-				"time_limit": 10.0, 
-				"timeout_index": 0,
-				"charm_lock_index": [1],
-				"options": [
-					{
-						"text": "(유혹에 넘어간다)", 
-						"effect": { "ID": "DAMAGE", "target": "my_master", "amount": 5 },
-						"next_dialogue": [
-							{"image": "res://Images/enemy.jpg", "text": "착한 아이네. 상으로 기분좋게 해줄게!"},
-							{"image": "res://Images/enemy.jpg", "text": "어때 좋지?"}
-						]
-					},
-					{
-						"text": "(거절한다)", 
-						"next_dialogue": [
-							{"image": "res://Images/enemy.jpg", "text": "쳇, 시시하긴. 후회하게 될 거야!"}
-						]
-					}
-				]
-			}
-		],
-	],
 	"INDUCE_PASSIVE": [
 		[
 			{
+				"name": "핑크 메이드",
 				"image": "res://Images/cg/pink_maid_stand.png", 
 				"text": "저기, 그 효과 저한테 주시겠어요? \n만약 저한테 주신다면 '봉사' 해드리겠습니다❤️",
 				# "time_limit": 10.0,
@@ -250,24 +242,70 @@ var dialogue_list = {
 						"text": "(유혹에 넘어간다) 효과 대상을 변경", 
 						"override_target": true,
 						"next_dialogue": [
-							{"image": "res://Images/cg/pink_maid_stand.png", "text": "감사합니다 주인님❤️. 잘 받을게요❤️"},
-							{	"image": "res://Images/cg/pink_maid_handjob_0.png", 
-								"text": "자 그러면 보답으로❤️.\n최고로 기분 좋은 봉사❤️ 시작하겠습니다❤️",
-								"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 1 }},
-							{"image": "res://Images/cg/pink_maid_handjob_1.png", "text": "다음에도 잘 부탁드립니다. 주인님❤️",
-								"effect": { "ID": "DAMAGE", "target": "my_master", "amount": 1 }},
+							{"name": "핑크 메이드", 
+							 "image": "res://Images/cg/pink_maid_stand.png", 
+							 "text": "감사합니다 주인님❤️. 잘 받을게요❤️"},
+							{"name": "핑크 메이드",
+							 "image": "res://Images/cg/pink_maid_handjob_0.png", 
+							 "text": "자 그러면 보답으로❤️.\n최고로 기분 좋은 봉사❤️ 시작하겠습니다❤️",
+							"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 1 }},
+							{"name": "핑크 메이드", 
+							 "image": "res://Images/cg/pink_maid_handjob_1.png", 
+							 "text": "다음에도 잘 부탁드립니다. 주인님❤️",
+							 "effect": { "ID": "DAMAGE", "target": "my_master", "amount": 1 }},
 						]
 					},
 					{
 						"text": "(단호하게 거절한다) 원래 대상에게 사용", 
 						"override_target": false,
 						"next_dialogue": [
-							{"image": "res://Images/cg/pink_maid_stand.png", "text": "칫, 쪼잔하긴."}
+							{"name": "핑크 메이드", 
+							 "image": "res://Images/cg/pink_maid_stand.png", 
+							 "text": "칫, 쪼잔하긴."}
 						]
 					}
 				]
 			}
 		],
+	],
+	"PINK_MAID_BEG": [
+		[
+			{
+				"name": "핑크 메이드",
+				"image": "res://Images/cg/pink_maid_stand.png", 
+				"text": "꺄아앗! 아, 아파요... 이대로 죽고 싶지 않아요...\n살려주시면... 뭐든지 할게요❤️",
+				"options": [
+					{
+						"text": "(거절한다) 가차없이 숨통을 끊는다.", 
+						"kill_minion": true, # 이 플래그를 통해 BattleScene에서 최종 파괴를 결정합니다!
+						"next_dialogue": [
+							{"name": "핑크 메이드", "image": "res://Images/cg/pink_maid_stand.png", "text": "아아앗... 너무해..."}
+						]
+					},
+					{
+						"text": "(수락한다) 목숨을 살려준다.", 
+						"kill_minion": false,
+						"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 3 },
+						"next_dialogue": [
+							{"name": "핑크 메이드", "image": "res://Images/cg/pink_maid_stand.png", "text": "감사합니다 주인님❤️\n제 몸, 마음껏 써주세요❤️"}
+						]
+					}
+				]
+			}
+		]
+	],
+	"DEFAULT_BEG": [
+		[
+			{
+				"name": "적 하수인",
+				"image": "res://Images/enemy.jpg", 
+				"text": "살려주세요! 한 번만 봐주세요!",
+				"options": [
+					{ "text": "죽어라.", "kill_minion": true },
+					{ "text": "봐준다.", "kill_minion": false }
+				]
+			}
+		]
 	]
 }
 

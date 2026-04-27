@@ -1,11 +1,11 @@
 extends Node
 
-@onready var battle_scene = get_tree().current_scene
+@onready var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 
 func start_enemy_turn():
 	print("Enemy AI: 턴 시작")
 	
-	var dialog_data = CardDatabase.get_dialogue("ENEMY_TURN_START")
+	var dialog_data = EnemyDatabase.get_current_turn_start_dialogue()
 	if not dialog_data.is_empty():
 		battle_scene.dialogue_manager.start_dialogue(dialog_data)
 		await battle_scene.dialogue_manager.dialogue_finished
@@ -42,6 +42,33 @@ func _try_use_card() -> bool:
 		# 필드가 꽉 찼는데 하수인 카드라면 사용할 수 없는 카드로 분류!
 		if c.card_data["type"] == "minion" and not has_empty_slot:
 			return false
+			
+		# === [AI 지능 업그레이드: 부스트(동전) 카드 낭비 방지] ===
+		if c.card_data.get("category", "") == "boost":
+			var will_be_useful = false
+			var mana_gain = 0
+			var draws_card = false
+			
+			# 이 카드가 제공하는 마나량과 드로우 여부 파악
+			if c.card_data.has("abilities") and c.card_data["abilities"].has("onUse"):
+				for eff in c.card_data["abilities"]["onUse"]:
+					if eff.get("ID") == "ADD_MANA": mana_gain += eff.get("amount", 0)
+					if eff.get("ID") == "DRAW_CARD": draws_card = true
+			
+			if draws_card: return true # 드로우가 달려있는 부스트(동전 주머니 등)는 무조건 사용!
+			
+			# 마나만 올려주는 카드(동전)라면, 이거 써서 낼 수 있는 카드가 '손패'에 있을 때만 사용!
+			for other_card in hand:
+				if other_card == c or not is_instance_valid(other_card): continue
+				var other_cost = other_card.card_data["cost"]
+				# 현재 마나로는 못 내지만, 동전을 쓰면 낼 수 있는 카드가 있다면 유용함!
+				if other_cost > battle_scene.enemy.mana and other_cost <= battle_scene.enemy.mana + mana_gain:
+					will_be_useful = true
+					break
+			
+			if not will_be_useful:
+				return false # 당장 이득이 없다면 동전을 내지 않고 손패에 킵(Keep)합니다!
+				
 		return true
 	)
 	

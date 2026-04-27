@@ -1,7 +1,7 @@
 extends Node
 
 # 배틀씬 참조
-@onready var battle_scene = get_tree().current_scene
+@onready var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 
 # 대상 지정이 필요한 능력을 가지고 있는지 확인
 func has_targeting_ability(card_data: Dictionary) -> bool:

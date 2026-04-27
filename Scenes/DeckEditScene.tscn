@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://b2na11xcs5msg"]
+
+[ext_resource type="Script" uid="uid://boq2bwk4aiktm" path="res://Scripts/Scenes/DeckEditScene.gd" id="1_m672q"]
+
+[node name="DeckEditScene" type="Control" unique_id=104556427]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 1920.0
+offset_bottom = 1080.0
+script = ExtResource("1_m672q")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=9142541]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -900.0
+offset_top = -450.0
+offset_right = 900.0
+offset_bottom = 450.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 20
+
+[node name="DeckPanel" type="Panel" parent="HBoxContainer" unique_id=967366997]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/DeckPanel" unique_id=954134360]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/DeckPanel/ScrollContainer" unique_id=55672770]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="PoolPanel" type="Panel" parent="HBoxContainer" unique_id=106364068]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer/PoolPanel" unique_id=1569697868]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer/PoolPanel/ScrollContainer" unique_id=308570599]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CountLabel" type="Label" parent="." unique_id=1654020293]
+layout_mode = 1
+offset_right = 212.0
+offset_bottom = 45.0
+theme_override_font_sizes/font_size = 32
+text = "현재 덱 장수: 0"
+
+[node name="SaveButton" type="Button" parent="." unique_id=1364051302]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -125.0
+offset_bottom = 31.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 32
+text = "저장후 메인으로"

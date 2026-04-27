@@ -9,7 +9,6 @@ const CARD_SCENE = preload("res://scenes/Card.tscn")
 @onready var input_manager = $Managers/InputManager
 
 @onready var dialogue_manager = $UI/DialogueManager
-@onready var game_over_ui = $UI/GameOverUI # 씬 트리에 추가한 GameOverUI 노드 경로
 @onready var description_manager = $UI/DescriptionManager # !!! 실제로 만드신 디스크립션 씬 노드 경로로 맞춰주세요 !!!
 
 @onready var attack_line = $UI/AttackLine
@@ -44,7 +43,7 @@ class Master:
 
 	var avatar: Node
 
-	var hp:int = 5
+	var hp:int = 20
 	var max_mana:int = 0
 	var mana:int = 0
 
@@ -69,6 +68,9 @@ class Master:
 var player = Master.new()
 var enemy = Master.new()
 
+func _enter_tree():
+	add_to_group("battle_scene") # 다른 스크립트들이 언제든지 안전하게 배틀씬을 찾을 수 있도록 그룹 명찰 달기!
+
 func _ready():
 	print("배틀 씬 시작")
 
@@ -77,11 +79,35 @@ func _ready():
 	player.name = "player"
 	enemy.name = "enemy"
 
-	player.max_mana = 1
-	player.mana = 1
+	# 게임 시작 시 마나 초기화 (change_turn이 호출되며 1로 오르기 때문!)
+	player.max_mana = 0
+	player.mana = 0
+	enemy.max_mana = 0
+	enemy.mana = 0
 
 	player.avatar = $PlayerAvatar
 	enemy.avatar = $EnemyAvatar
+
+	# --- 아바타(Area2D) 하위의 TextureRect 찾아서 비율 고정 및 동적 이미지 로드 ---
+	for master_obj in [player, enemy]:
+		var tex_rect = null
+		# Area2D의 자식 노드들 중 TextureRect를 자동으로 찾아냅니다! (노드 이름 상관없음)
+		for child in master_obj.avatar.get_children():
+			if child is TextureRect:
+				tex_rect = child
+				break
+				
+		if tex_rect:
+			tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			
+			if master_obj == enemy:
+				var current_enemy_data = EnemyDatabase.get_enemy_data(EnemyDatabase.current_enemy_id)
+				if current_enemy_data.has("avatar") and current_enemy_data["avatar"] != "":
+					tex_rect.texture = load(current_enemy_data["avatar"])
+			elif master_obj == player:
+				if DeckLib.player_avatar != "":
+					tex_rect.texture = load(DeckLib.player_avatar)
 
 	player.hand_position = $PlayerHand.position
 	enemy.hand_position = $EnemyHand.position
@@ -106,28 +132,87 @@ func _ready():
 	width_curve.add_point(Vector2(1.0, 0.0)) # 끝점: 0% 굵기 (뾰족하게)
 	attack_line.width_curve = width_curve
 
+	
 	refill_deck(player)
-	if game_over_ui:
-		game_over_ui.play_again_pressed.connect(func(): get_tree().reload_current_scene())
-
 	refill_deck(enemy)
 
 	_create_deck_visuals() # 화면에 더미 덱 시각화
-
 	_start_battle() # 순차적 드로우 연출 시작
 
 func _start_battle():
 	set_input_lock(true) # 덱에서 카드가 날아오는 동안 마우스 조작 방지
+		
 	await get_tree().create_timer(0.5).timeout # 덱이 테이블에 놓이고 잠시 대기
+
+		
+	# === 선공/후공 결정 (룰렛 연출) ===
+	var is_player_first = randf() > 0.5
+	var enemy_data = EnemyDatabase.get_enemy_data(EnemyDatabase.current_enemy_id)
+	var enemy_name = enemy_data.get("name", "적")
 	
+	var roulette_label = Label.new()
+	roulette_label.add_theme_font_size_override("font_size", 80)
+	roulette_label.add_theme_color_override("font_outline_color", Color.BLACK)
+	roulette_label.add_theme_constant_override("outline_size", 15)
+	roulette_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	roulette_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	roulette_label.set_anchors_preset(Control.PRESET_FULL_RECT) # 화면 정중앙 꽉 채우기
+	roulette_label.z_index = 4000
+	ui_manager.add_child(roulette_label)
+	
+	# 크기 조절 애니메이션을 위해 텍스트의 중심점(Pivot)을 화면 중앙으로 설정
+	roulette_label.pivot_offset = get_viewport_rect().size / 2.0
+	
+	var names = ["플레이어", enemy_name]
+	var spins = 10 + (1 if is_player_first else 0) # 홀수번 돌면 플레이어, 짝수번 돌면 적 낙찰
+	
+	for i in range(spins):
+		roulette_label.text = names[i % 2]
+		var progress = float(i) / spins
+		var delay = lerp(0.01, 0.2, progress * progress) # 갈수록 극적으로 룰렛이 느려지는 수학 공식!
+		await get_tree().create_timer(delay).timeout
+		
+	# 룰렛 낙찰 결과 강조 애니메이션
+	roulette_label.modulate = Color(0.5, 1.0, 0.5) if is_player_first else Color(1.0, 0.5, 0.5)
+	var tween = create_tween()
+	tween.tween_property(roulette_label, "scale", Vector2(1.5, 1.5), 0.1).set_trans(Tween.TRANS_BACK)
+	tween.tween_property(roulette_label, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_QUAD)
+	
+	await get_tree().create_timer(1.5).timeout
+	roulette_label.queue_free() # 룰렛 연출이 끝나면 라벨 삭제
+
+	var toss_dialogue = [
+		{
+			"text": "당신의 선공입니다!" if is_player_first else "적의 선공입니다! (후공 보상: 동전 카드 지급)"
+		}
+	]
+	
+	dialogue_manager.start_dialogue(toss_dialogue)
+	await dialogue_manager.dialogue_finished
+	
+	# 후공에게 보너스 '동전' 카드 지급
+	add_to_hand(CardDatabase.get_card_by_id("COIN"), enemy if is_player_first else player)
+		
 	# 플레이어와 적이 번갈아가며 한 장씩 카드를 뽑는 쫀득한 연출
-	for i in range(5):
+	for i in range(4):
 		draw_cards(player, 1)
 		await get_tree().create_timer(0.15).timeout
 		draw_cards(enemy, 1)
 		await get_tree().create_timer(0.15).timeout
-		
+	# change_turn() 실행 시 차례가 넘어가며 턴이 시작되므로, 선공의 반대 마스터로 임시 세팅!
+	current_master = enemy if is_player_first else player
+	
 	set_input_lock(false) # 연출 완료 후 조작 잠금 해제
+	
+	# === 전투 시작 대사 연출 ===
+	var start_dialog_data = EnemyDatabase.get_game_start_dialogue()
+	if not start_dialog_data.is_empty():
+		dialogue_manager.start_dialogue(start_dialog_data)
+		await dialogue_manager.dialogue_finished
+
+	# 본격적인 첫 턴 개시! (여기서 1마나 획득 및 1드로우 추가 진행됨)
+	change_turn()
+
 func _create_deck_visuals():
 	# 더미용 최소 데이터
 
@@ -430,15 +515,54 @@ func _check_master_death(master: Master):
 func game_over(loser: Master):
 	set_input_lock(true) # 조작 완전 잠금
 	var is_player_victory = (loser == enemy)
-	if game_over_ui:
-		game_over_ui.show_result(is_player_victory)
+	
+	var dialog_data = EnemyDatabase.get_game_over_dialogue(is_player_victory)
+	if not dialog_data.is_empty():
+		dialogue_manager.start_dialogue(dialog_data)
+		await dialogue_manager.dialogue_finished
 	else:
 		print("게임 오버! 승리 여부: ", is_player_victory)
+		await get_tree().create_timer(2.0).timeout
+		
+	# 대화(또는 대기)가 끝나면 메인 메뉴로 복귀!
+	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
 func _check_minion_death(target):
 	if is_instance_valid(target) and target is not Master and target.card_data["hp"] <= 0:
+		
+		# === [lewd 카테고리 목숨 구걸 로직] ===
+		if target.card_data.get("category", "") == "lewd":
+			target.card_data["hp"] = 1 # 체력을 1로 고정하여 매번 끈질기게 생존시킴!
+			target.update_display()
+			
+			var dialog_id = target.card_data.get("beg_dialogue_id", "DEFAULT_BEG")
+			var dialog_data = CardDatabase.get_dialogue(dialog_id)
+			
+			if not dialog_data.is_empty():
+				_handle_begging_dialogue(target, dialog_data)
+				return # 함수를 여기서 종료시켜 하수인을 파괴(destroy_minion)하지 않음!
+				
 		print("%s의 %s 전사" % [target.master.name, target.card_data["name"]])
 		destroy_minion(target)
+
+func _handle_begging_dialogue(target: Area2D, dialog_data: Array):
+	# 선택지 결과를 받아올 임시 변수 (람다 함수 캡처용 배열)
+	var chosen_opt = [null]
+	var on_choice = func(opt):
+		chosen_opt[0] = opt
+		
+	dialogue_manager.choice_made.connect(on_choice, CONNECT_ONE_SHOT)
+	dialogue_manager.start_dialogue(dialog_data)
+	
+	# 다이얼로그가 완전히 끝날 때까지 대기
+	await dialogue_manager.dialogue_finished
+	
+	# 플레이어가 '죽인다(kill_minion: true)'를 선택했다면 결국 파괴!
+	if chosen_opt[0] != null and chosen_opt[0].get("kill_minion", false) == true:
+		if is_instance_valid(target):
+			target.card_data["hp"] = 0
+			target.update_display()
+			destroy_minion(target)
 
 func destroy_minion(card: Area2D):
 	# 1. 전장 배열에서 해당 데이터 삭제

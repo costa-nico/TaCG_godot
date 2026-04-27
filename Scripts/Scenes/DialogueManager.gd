@@ -12,6 +12,7 @@ var is_waiting_for_choice: bool = false
 @onready var template_button: Button = $OptionContainer/TemplateButton
 @onready var timer_node: Timer = $Timer
 @onready var time_label: Label = $TimeLabel
+@onready var name_label: Label = $NameLabel
 
 signal dialogue_finished
 signal choice_made(option_data)
@@ -37,7 +38,7 @@ func start_dialogue(data: Array):
 	show()
 	
 	# 다이얼로그가 열릴 때 InputManager의 상태를 강제로 UI_OPEN으로 변경
-	var battle_scene = get_tree().current_scene
+	var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 	if battle_scene and battle_scene.input_manager:
 		battle_scene.input_manager.set_state(battle_scene.input_manager.InputState.UI_OPEN)
 
@@ -56,11 +57,22 @@ func _show_current_dialogue():
 		if current.has("image"):
 			# 스프라이트가 없는 경우를 대비한 안전 코드
 			if sprite: sprite.texture = load(current["image"])
+		else:
+			if sprite: sprite.texture = null # 이미지가 지정되지 않았을 경우 이전 이미지가 남지 않도록 완벽하게 비워줍니다!
 		text_label.text = current.get("text", "")
 		
+		# 이름(Name) 라벨 처리 추가!
+		if name_label:
+			if current.has("name") and current["name"] != "":
+				name_label.text = current["name"]
+				name_label.show() # 이름이 있으면 보이게 켭니다
+			else:
+				name_label.text = ""
+				name_label.hide() # 이름이 없으면 깔끔하게 숨깁니다
+				
 		# 대사가 화면에 출력될 때 효과(Effect)가 있다면 즉시 발동!
 		if current.has("effect"):
-			var battle_scene = get_tree().current_scene
+			var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 			if battle_scene and battle_scene.ability_manager:
 				battle_scene.ability_manager._execute_effect(current["effect"], battle_scene.player, battle_scene.player)
 				
@@ -73,7 +85,7 @@ func _show_current_dialogue():
 func _setup_options(data: Dictionary):
 	is_waiting_for_choice = true
 	var options = data["options"]
-	var battle_scene = get_tree().current_scene
+	var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 	
 	# [매혹 판정] CHARM 스택당 10%의 확률로 이성적 판단 상실!
 	var charm_stacks = battle_scene.player.status_effects.get("CHARM", 0)
@@ -121,7 +133,7 @@ func _on_time_out():
 		_on_option_selected(options[force_index])
 
 func _on_option_selected(opt: Dictionary):
-	var battle_scene = get_tree().current_scene
+	var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 	# 선택지에 카드 능력과 똑같은 effect가 들어있다면, 어빌리티 매니저를 통해 발동!
 	if opt.has("effect") and battle_scene and battle_scene.ability_manager:
 		battle_scene.ability_manager._execute_effect(opt["effect"], battle_scene.player, battle_scene.player)
@@ -163,10 +175,12 @@ func _proceed_dialogue():
 func _end_dialogue():
 	hide()
 	if timer_node: timer_node.stop() # 대화가 끝나면 무조건 타이머 멈추기 (잠재적 버그 차단)
-	emit_signal("dialogue_finished")
 	dialogue_data.clear()
 	
 	# 창이 완전히 닫히면 InputManager를 다시 대기(IDLE) 상태로 돌려놓음
-	var battle_scene = get_tree().current_scene
-	if battle_scene and battle_scene.input_manager:
-		battle_scene.input_manager.set_state(battle_scene.input_manager.InputState.IDLE)
+	if is_inside_tree() and get_tree():
+		var battle_scene = get_tree().get_first_node_in_group("battle_scene")
+		if battle_scene and battle_scene.input_manager:
+			battle_scene.input_manager.set_state(battle_scene.input_manager.InputState.IDLE)
+			
+	emit_signal("dialogue_finished") # 모든 정리가 끝난 가장 마지막에 시그널을 보내 씬을 전환하도록 유도!
