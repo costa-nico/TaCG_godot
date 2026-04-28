@@ -237,6 +237,34 @@ var dialogue_list = {
 				# "time_limit": 10.0,
 				"timeout_index": 0,
 				"charm_lock_index": [1], 
+				"charm_option": [
+					{
+						"text": "네, 기꺼이 드릴게요❤️", 
+						"override_target": true,
+						"next_dialogue": [
+							{"name": "핑크 메이드", 
+							 "image": "res://Images/cg/pink_maid_stand.png", 
+							 "text": "감사합니다 주인님❤️. 잘 받을게요❤️"},
+							{"name": "핑크 메이드",
+							 "image": "res://Images/cg/pink_maid_handjob_0.png", 
+							 "text": "자 그러면 보답으로❤️.\n최고로 기분 좋은 봉사❤️ 시작하겠습니다❤️",
+							"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 1 }},
+						]
+					},
+					{
+						"text": "주인님이라고 불러주니 거절할 수 없네❤️", 
+						"override_target": true,
+						"next_dialogue": [
+							{"name": "핑크 메이드", 
+							 "image": "res://Images/cg/pink_maid_stand.png", 
+							 "text": "감사합니다 주인님❤️. 잘 받을게요❤️"},
+							{"name": "핑크 메이드",
+							 "image": "res://Images/cg/pink_maid_handjob_0.png", 
+							 "text": "자 그러면 보답으로❤️.\n최고로 기분 좋은 봉사❤️ 시작하겠습니다❤️",
+							"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 1 }},
+						]
+					}
+				],
 				"options": [
 					{
 						"text": "(유혹에 넘어간다) 효과 대상을 변경", 
@@ -319,3 +347,61 @@ func get_dialogue(id: String) -> Array:
 		else:
 			return data.duplicate(true)
 	return []
+
+# 한국어 단어 중간 잘림을 완벽하게 방지하기 위해, 글자 사이에 '단어 결합자(Word Joiner)' 투명 문자를 삽입하는 강력한 헬퍼 함수!
+func keep_together(text: String) -> String:
+	var result = ""
+	for i in range(text.length()):
+		result += text[i]
+		if i < text.length() - 1:
+			result += "\u2060" # U+2060: 어떤 경우에도 줄바꿈을 허용하지 않는 투명 특수문자
+	return result
+
+func get_keyword_description(kw: Dictionary, tooltips: Dictionary) -> String:
+	match kw.get("ID", ""):
+		"TAUNT":
+			tooltips["도발"] = "도발: 도발을 가진 하수인이 있다면, 다른 대상을 공격할 수 없습니다."
+			return "[color=#FFD700]%s[/color]" % keep_together("[도발]")
+	return ""
+
+func get_effect_description(eff: Dictionary, tooltips: Dictionary) -> String:
+	var target_dict = {
+		"my_master": "자신 마스터에게", 
+		"enemy_master": "적 마스터에게",
+		"enemy_minion": "적 하수인 하나에게", 
+		"my_minion": "아군 하수인 하나에게",
+		"any_minion": "하수인 하나에게", 
+		"enemy_minions": "모든 적 하수인에게",
+		"my_minions": "모든 아군 하수인에게", 
+		"enemy_empty_slot": "적의 빈 슬롯 하나에",
+		"my_empty_slot": "아군의 빈 슬롯 하나에",
+		"any_empty_slot": "아무 빈 슬롯 하나에",
+		"any": "아무 대상에게나", 
+		"self": "자신에게"
+	}
+	var t_str = target_dict.get(eff.get("target", ""), "")
+	var t_prefix = t_str + " " if t_str != "" else ""
+	match eff.get("ID", ""):
+		"DAMAGE", "DAMAGE_ALL": return t_prefix + "피해를 %d줍니다." % eff.get("amount", 0)
+		"BUFF", "BUFF_ALL": return t_prefix + "+%d/+%d 부여합니다." % [eff.get("atk", 0), eff.get("hp", 0)]
+		"ADD_MANA": return "마나를 %d회복합니다." % eff.get("amount", 0)
+		"DRAW_CARD": return "카드를 %d장 뽑습니다." % eff.get("amount", 0)
+		"ADD_HP": return t_prefix + "체력을 %d회복합니다." % eff.get("amount", 0)
+		"DOUBLE_HP": return t_prefix + "체력을 2배로 만듭니다."
+		"APPLY_STATUS": 
+			var status_id = eff.get("status_id", "")
+			var s_data = get_status_data(status_id)
+			var s_name = s_data.get("name", "상태이상")
+			
+			if not s_data.is_empty():
+				tooltips[s_name] = "%s: %s" % [s_name, s_data.get("description", "")]
+				
+			return t_prefix + "[color=#00FFFF]%s[/color]을(를) %d스택 부여합니다." % [keep_together("[" + s_name + "]"), eff.get("amount", 0)]
+		"SUMMON":
+			var c_data = get_card_by_id(eff.get("card_id", ""))
+			var c_name = c_data.get("name", "하수인")
+			return t_prefix + "[color=#FFD700]%s[/color]을(를) 소환합니다." % keep_together(c_name)
+		"INDUCE":
+			tooltips["유도"] = "유도: 상대가 이로운 효과(버프)를 사용할 때, 그 효과를 가로채는 유혹을 시도합니다."
+			return "[color=#FF69B4]%s[/color] 능력을 지닙니다." % keep_together("[유도]")
+	return "알 수 없는 효과"

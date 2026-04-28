@@ -17,31 +17,31 @@ var enemy_list = {
 		]
 	},
 	"enemy_2": {
-		"name": "메이드",
+		"name": "메이드 장",
 		"avatar": "res://Images/cg/player.png",
 		"deck": { "SERVICE_START": 5, "PINK_MAID": 10, "COIN": 15 },
 		"game_start_dialogue": [
-			{"name": "핑크 메이드", "image": "res://Images/cg/pink_maid_stand.png", "text": "어서 오세요 주인님❤️. 오늘은 성심성의껏 봉사해드리겠습니다❤️."},
+			{"name": "메이드 장", "image": "res://Images/cg/pink_maid_stand.png", "text": "어서 오세요 주인님❤️. 오늘은 성심성의껏 봉사해드리겠습니다❤️."},
 		],
 		"win_dialogue": [
-			{"name": "핑크 메이드", "image": "res://Images/enemy.jpg", "text": "아앙... 주인님 너무 강해요❤️ 항복할게요❤️"}
+			{"name": "메이드 장", "image": "res://Images/enemy.jpg", "text": "아앙... 주인님 너무 강해요❤️ 항복할게요❤️"}
 		],
 		"lose_dialogue": [
-			{"name": "핑크 메이드", "image": "res://Images/enemy.jpg", "text": "우후훗❤️ 이제 영원히 제 장난감이에요❤️"}
+			{"name": "메이드 장", "image": "res://Images/enemy.jpg", "text": "우후훗❤️ 이제 영원히 제 장난감이에요❤️"}
 		]
 	},
 	"enemy_3": {
-		"name": "메이드",
+		"name": "수녀님",
 		"avatar": "res://Images/cg/player.png",
 		"deck": { "SERVICE_START": 5, "PINK_MAID": 10, "COIN": 15 },
 		"game_start_dialogue": [
-			{"name": "핑크 메이드", "image": "res://Images/cg/pink_maid_stand.png", "text": "어서 오세요 주인님❤️. 오늘은 성심성의껏 봉사해드리겠습니다❤️."},
+			{"name": "수녀님", "image": "res://Images/cg/pink_maid_stand.png", "text": "길잃은 어린 양이시여. 제가 바른길로 인도해드릴게요❤️"},
 		],
 		"win_dialogue": [
-			{"name": "핑크 메이드", "image": "res://Images/enemy.jpg", "text": "아앙... 주인님 너무 강해요❤️ 항복할게요❤️"}
+			{"name": "수녀님", "image": "res://Images/enemy.jpg", "text": "아앙... 이토록 불경할수가..."}
 		],
 		"lose_dialogue": [
-			{"name": "핑크 메이드", "image": "res://Images/enemy.jpg", "text": "우후훗❤️ 이제 영원히 제 장난감이에요❤️"}
+			{"name": "수녀님", "image": "res://Images/enemy.jpg", "text": "신도가 되신것을 환영합니다...❤️"}
 		]
 	}
 }
