@@ -235,11 +235,9 @@ var dialogue_list = {
 				"image": "res://Images/cg/pink_maid_stand.png", 
 				"text": "저기, 그 효과 저한테 주시겠어요? \n만약 저한테 주신다면 '봉사' 해드리겠습니다❤️",
 				# "time_limit": 10.0,
-				"timeout_index": 0,
-				"charm_lock_index": [1], 
 				"charm_option": [
 					{
-						"text": "네, 기꺼이 드릴게요❤️", 
+						"text": "유혹에 저항할 수 없다", 
 						"override_target": true,
 						"next_dialogue": [
 							{"name": "핑크 메이드", 
@@ -252,7 +250,7 @@ var dialogue_list = {
 						]
 					},
 					{
-						"text": "주인님이라고 불러주니 거절할 수 없네❤️", 
+						"text": "유혹에 저항할 수 없다", 
 						"override_target": true,
 						"next_dialogue": [
 							{"name": "핑크 메이드", 
@@ -304,16 +302,19 @@ var dialogue_list = {
 				"text": "꺄아앗! 아, 아파요... 이대로 죽고 싶지 않아요...\n살려주시면... 뭐든지 할게요❤️",
 				"options": [
 					{
-						"text": "(거절한다) 가차없이 숨통을 끊는다.", 
+						"text": "마지막 일격을 가한다.", 
 						"kill_minion": true, # 이 플래그를 통해 BattleScene에서 최종 파괴를 결정합니다!
 						"next_dialogue": [
 							{"name": "핑크 메이드", "image": "res://Images/cg/pink_maid_stand.png", "text": "아아앗... 너무해..."}
 						]
 					},
 					{
-						"text": "(수락한다) 목숨을 살려준다.", 
+						"text": "고개를 끄덕인다.", 
 						"kill_minion": false,
-						"effect": { "ID": "APPLY_STATUS", "target": "my_master", "status_id": "CHARM", "amount": 3 },
+						"effect": [
+							{ "ID": "SET_HP", "target": "self", "amount": 1 }, # 초과 피해량에 상관없이 자신(하수인)의 체력을 1로 고정
+							{ "ID": "APPLY_STATUS", "target": "attacker", "status_id": "CHARM", "amount": 3 } # 공격자에게 매혹 부여
+						],
 						"next_dialogue": [
 							{"name": "핑크 메이드", "image": "res://Images/cg/pink_maid_stand.png", "text": "감사합니다 주인님❤️\n제 몸, 마음껏 써주세요❤️"}
 						]
@@ -376,7 +377,8 @@ func get_effect_description(eff: Dictionary, tooltips: Dictionary) -> String:
 		"enemy_empty_slot": "적의 빈 슬롯 하나에",
 		"my_empty_slot": "아군의 빈 슬롯 하나에",
 		"any_empty_slot": "아무 빈 슬롯 하나에",
-		"any": "아무 대상에게나", 
+		"any": "아무 대상에게나",
+		"attacker": "자신을 공격한 대상에게",
 		"self": "자신에게"
 	}
 	var t_str = target_dict.get(eff.get("target", ""), "")
@@ -387,6 +389,7 @@ func get_effect_description(eff: Dictionary, tooltips: Dictionary) -> String:
 		"ADD_MANA": return "마나를 %d회복합니다." % eff.get("amount", 0)
 		"DRAW_CARD": return "카드를 %d장 뽑습니다." % eff.get("amount", 0)
 		"ADD_HP": return t_prefix + "체력을 %d회복합니다." % eff.get("amount", 0)
+		"SET_HP": return t_prefix + "체력을 %d(으)로 만듭니다." % eff.get("amount", 0)
 		"DOUBLE_HP": return t_prefix + "체력을 2배로 만듭니다."
 		"APPLY_STATUS": 
 			var status_id = eff.get("status_id", "")

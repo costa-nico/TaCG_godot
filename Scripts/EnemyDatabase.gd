@@ -7,7 +7,7 @@ var enemy_list = {
 	"enemy_1": {
 		"name": "허수아비 (튜토리얼)",
 		"avatar": "res://Images/cg/player.png",
-		"deck": { "DUMMY": 30 },
+		"deck": { "DUMMY": 0 },
 		"turn_start_dialogue": [], # 대사 없음
 		"win_dialogue": [
 			{"name": "", "image": "res://Images/cg/player.png", "text": "허수아비를 쓰러뜨렸다! 전투 종료."}

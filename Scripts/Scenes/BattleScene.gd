@@ -488,7 +488,6 @@ func attack_with_minion(attacker, target):
 		else:				 # 미니언 공격
 			ability_manager.trigger_ability("onHit", target) # 공격 후 발동 능력 체크
 			target.card_data["hp"] -= attacker.card_data["atk"]
-			attacker.card_data["hp"] -= target.card_data["atk"] # 반격 데미지
 			
 			attacker.update_display()
 			target.update_display()
@@ -504,8 +503,8 @@ func attack_with_minion(attacker, target):
 	if is_instance_valid(attacker):
 		attacker.z_index = 0
 		
-	_check_minion_death(attacker)
-	_check_minion_death(target)
+	_check_minion_death(attacker, target) # attacker가 죽었을 땐 target이 나를 때린 주체가 됨
+	_check_minion_death(target, attacker) # target이 죽었을 땐 attacker가 나를 때린 주체가 됨
 	set_input_lock(false) # 공격 애니메이션 완료 후 입력 잠금 해제
 
 func _check_master_death(master: Master):
@@ -527,7 +526,7 @@ func game_over(loser: Master):
 	# 대화(또는 대기)가 끝나면 메인 메뉴로 복귀!
 	get_tree().change_scene_to_file("res://scenes/MainMenu.tscn")
 
-func _check_minion_death(target):
+func _check_minion_death(target, attacker = null):
 	if is_instance_valid(target) and target is not Master and target.card_data["hp"] <= 0:
 		
 		# === [lewd 카테고리 목숨 구걸 로직] ===
@@ -539,20 +538,20 @@ func _check_minion_death(target):
 			var dialog_data = CardDatabase.get_dialogue(dialog_id)
 			
 			if not dialog_data.is_empty():
-				_handle_begging_dialogue(target, dialog_data)
+				_handle_begging_dialogue(target, dialog_data, attacker)
 				return # 함수를 여기서 종료시켜 하수인을 파괴(destroy_minion)하지 않음!
 				
 		print("%s의 %s 전사" % [target.master.name, target.card_data["name"]])
 		destroy_minion(target)
 
-func _handle_begging_dialogue(target: Area2D, dialog_data: Array):
+func _handle_begging_dialogue(target: Area2D, dialog_data: Array, attacker = null):
 	# 선택지 결과를 받아올 임시 변수 (람다 함수 캡처용 배열)
 	var chosen_opt = [null]
 	var on_choice = func(opt):
 		chosen_opt[0] = opt
 		
 	dialogue_manager.choice_made.connect(on_choice, CONNECT_ONE_SHOT)
-	dialogue_manager.start_dialogue(dialog_data)
+	dialogue_manager.start_dialogue(dialog_data, { "victim": target, "attacker": attacker })
 	
 	# 다이얼로그가 완전히 끝날 때까지 대기
 	await dialogue_manager.dialogue_finished

@@ -4,6 +4,7 @@ extends Control
 var dialogue_data: Array = []
 var current_index: int = 0
 var is_waiting_for_choice: bool = false
+var dialogue_context: Dictionary = {} # 공격자(attacker), 피격자(victim) 등의 정보를 기억하는 변수
 
 @onready var sprite: TextureRect = $TextureRect # 텍스처렉트로 바꾸셨다면 노드 이름을 TextureRect로 맞춰주세요!
 @onready var text_label: Label = $Panel/MarginContainer/TextLabel
@@ -30,10 +31,12 @@ func _ready():
 		
 	hide()
 
-func start_dialogue(data: Array):
+func start_dialogue(data: Array, context: Dictionary = {}):
 	dialogue_data = data
 	current_index = 0
 	is_waiting_for_choice = false
+	if not context.is_empty():
+		dialogue_context = context # 대화가 이어져도 누가 때렸는지 기억합니다!
 	_show_current_dialogue()
 	show()
 	
@@ -74,7 +77,11 @@ func _show_current_dialogue():
 		if current.has("effect"):
 			var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 			if battle_scene and battle_scene.ability_manager:
-				battle_scene.ability_manager._execute_effect(current["effect"], battle_scene.player, battle_scene.player)
+				var source = dialogue_context.get("victim", battle_scene.player)
+				var target_unit = dialogue_context.get("attacker", battle_scene.player)
+				var effects = current["effect"] if typeof(current["effect"]) == TYPE_ARRAY else [current["effect"]]
+				for eff in effects:
+					battle_scene.ability_manager._execute_effect(eff, source, target_unit)
 				
 		# 대사에 선택지가 포함되어 있다면 버튼 생성
 		if current.has("options"):
@@ -84,7 +91,6 @@ func _show_current_dialogue():
 
 func _setup_options(data: Dictionary):
 	is_waiting_for_choice = true
-	var options = data["options"]
 	var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 	
 	# [매혹 판정] CHARM 스택당 10%의 확률로 이성적 판단 상실!
@@ -92,24 +98,19 @@ func _setup_options(data: Dictionary):
 	var charm_chance = charm_stacks * 0.1 
 	var is_charmed = randf() < charm_chance
 	
-	var lock_indices = data.get("charm_lock_index", [])
-	if typeof(lock_indices) != TYPE_ARRAY:
-		lock_indices = [lock_indices]
+	var options_to_show = data.get("options", [])
 		
-	if is_charmed and not lock_indices.is_empty():
+	if is_charmed and data.has("charm_option"):
 		text_label.text = "(매혹되어 이성적인 판단이 힘듭니다...)\n\n" + text_label.text
+		var charm_opts = data["charm_option"]
+		options_to_show = charm_opts if typeof(charm_opts) == TYPE_ARRAY else [charm_opts]
 		
-	# 정상 상태: 선택지 버튼 생성
-	for i in range(options.size()):
-		var opt = options[i]
+	for i in range(options_to_show.size()):
+		var opt = options_to_show[i]
 		# 템플릿 버튼을 복사해서 사용!
 		var btn = template_button.duplicate() if template_button else Button.new()
 		btn.text = opt["text"]
 		btn.pressed.connect(func(): _on_option_selected(opt))
-		
-		if is_charmed and i in lock_indices:
-			btn.disabled = true
-			btn.text += " (잠김)"
 			
 		btn.show() # 복사본은 눈에 보이게 켭니다
 		option_container.add_child(btn)
@@ -136,7 +137,11 @@ func _on_option_selected(opt: Dictionary):
 	var battle_scene = get_tree().get_first_node_in_group("battle_scene")
 	# 선택지에 카드 능력과 똑같은 effect가 들어있다면, 어빌리티 매니저를 통해 발동!
 	if opt.has("effect") and battle_scene and battle_scene.ability_manager:
-		battle_scene.ability_manager._execute_effect(opt["effect"], battle_scene.player, battle_scene.player)
+		var source = dialogue_context.get("victim", battle_scene.player)
+		var target_unit = dialogue_context.get("attacker", battle_scene.player)
+		var effects = opt["effect"] if typeof(opt["effect"]) == TYPE_ARRAY else [opt["effect"]]
+		for eff in effects:
+			battle_scene.ability_manager._execute_effect(eff, source, target_unit)
 		
 	emit_signal("choice_made", opt)
 	

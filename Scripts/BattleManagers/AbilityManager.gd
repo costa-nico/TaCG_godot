@@ -96,9 +96,9 @@ func _execute_effect(effect: Dictionary, source, selected_target):
 	for target in targets:
 		if target == null: continue
 		_apply_popping(source) # 번쩍이는 연출 (안전 검사 포함)
-		_apply_effect_by_id(effect, target)
+		_apply_effect_by_id(effect, target, source)
 
-func _apply_effect_by_id(effect: Dictionary, target):
+func _apply_effect_by_id(effect: Dictionary, target, source = null):
 	var effect_id = effect.get("ID", "")
 	var amount = effect.get("amount", 0)
 	var atk_val = effect.get("atk", 0)
@@ -116,6 +116,13 @@ func _apply_effect_by_id(effect: Dictionary, target):
 			if "mana" in target:
 				target.mana += amount
 				battle_scene.ui_manager.update()
+		"SET_HP":
+			if "mana" in target:
+				target.hp = amount
+				battle_scene.ui_manager.update()
+			else:
+				target.card_data["hp"] = amount
+				target.update_display()
 		"DOUBLE_HP":
 			if not "mana" in target:
 				target.card_data["hp"] *= 2
@@ -130,7 +137,7 @@ func _apply_effect_by_id(effect: Dictionary, target):
 			else: # 하수인인 경우
 				target.card_data["hp"] -= amount
 				target.update_display()
-				battle_scene._check_minion_death(target) # 체력이 0 이하인지 체크
+				battle_scene._check_minion_death(target, source) # 마법 시전자(source)를 attacker로 전달!
 		"BUFF", "BUFF_ALL":
 			if not "mana" in target: # 하수인에게만 적용
 				target.card_data["atk"] += atk_val
@@ -138,7 +145,7 @@ func _apply_effect_by_id(effect: Dictionary, target):
 				target.update_display()
 		"APPLY_STATUS":
 			var status_id = effect.get("status_id", "")
-			if status_id != "":
+			if status_id != "" and "status_effects" in target:
 				target.status_effects[status_id] = target.status_effects.get(status_id, 0) + amount
 				if "mana" in target:
 					battle_scene.update_master_statuses()
@@ -182,6 +189,9 @@ func _get_targets(target_type: String, source, selected_target) -> Array:
 	match target_type:
 		"self":
 			result.append(source)
+		"attacker":
+			if selected_target: 
+				result.append(selected_target)
 		"my_master": 
 			result.append(my_master)
 		"other_master", "enemy_master": 
